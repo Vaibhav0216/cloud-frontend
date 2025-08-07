@@ -154,22 +154,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">AWS Database</span>
-              </div>
-            </div>
-            <div className="mt-4 text-center text-sm text-gray-600">
-              <p>Connected to AWS API Gateway</p>
-              <p className="mt-1 text-xs text-gray-500">API: nrj1481m2k.execute-api.ap-south-1.amazonaws.com</p>
-              <p className="mt-1 text-xs text-gray-400">Test Credentials: john.doe@example.com / Test@1234</p>
-            </div>
-          </div>
         </div>
 
         <div className="text-center text-blue-200 text-sm">

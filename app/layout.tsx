@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { TenantProvider } from "./contexts/TenantProvider";
+import { WebSocketProvider } from "./contexts/WebSocketProvider";
 
 export const metadata: Metadata = {
   title: "AMSET - Multi-Tenant IoT Platform",
@@ -32,9 +35,15 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ThemeProvider>
+          <TenantProvider>
+            <AuthProvider>
+              <WebSocketProvider>
+                {children}
+              </WebSocketProvider>
+            </AuthProvider>
+          </TenantProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

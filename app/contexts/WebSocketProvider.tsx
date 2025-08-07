@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from './AuthContext';
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -308,4 +308,4 @@ export function useWebSocket() {
     throw new Error('useWebSocket must be used within a WebSocketProvider');
   }
   return context;
-}
+} 

@@ -6,10 +6,7 @@ import TopNavbar from "./components/TopNavbar";
 import DeviceCard from "./components/DeviceCard";
 import TelemetryChart from "./components/TelemetryChart";
 import ProtectedRoute from "./components/ProtectedRoute";
-import {
-  WebSocketProvider,
-  useWebSocket
-} from "./components/WebSocketProvider";
+import { useWebSocket } from "./contexts/WebSocketProvider";
 import { useAuth } from "./contexts/AuthContext";
 
 // Define device type
@@ -260,7 +257,7 @@ function DashboardContent() {
           isConnected={isConnected}
         />
 
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-auto bg-gray-50 dark:bg-gray-900">
           {/* Dashboard Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -494,9 +491,7 @@ function DashboardContent() {
 export default function Dashboard() {
   return (
     <ProtectedRoute>
-      <WebSocketProvider>
-        <DashboardContent />
-      </WebSocketProvider>
+      <DashboardContent />
     </ProtectedRoute>
   );
 }
