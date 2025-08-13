@@ -18,6 +18,8 @@ import {
   Settings
 } from 'lucide-react';
 
+import { Device, PumpDevice, SensorDevice, ValveDevice } from '../types/device';
+
 interface User {
   role: 'admin' | 'operator' | 'viewer';
 }
@@ -31,7 +33,7 @@ export default function DevicesPage() {
   const { hasFeature } = useTenant();
 
   // Mock devices data (in real app, this would come from API)
-  const [devices, setDevices] = useState([
+  const [devices, setDevices] = useState<Device[]>([
     {
       id: 'pump-001',
       name: 'Main Water Pump',
@@ -42,8 +44,11 @@ export default function DevicesPage() {
       battery: 85,
       canControl: true,
       isOn: true,
-      readings: { pressure: 2.3, flow: 45.2 }
-    },
+      readings: {
+        pressure: 2.3,
+        flow: 45.2
+      }
+    } as PumpDevice,
     {
       id: 'sensor-001',
       name: 'Temperature Sensor #1',
@@ -53,8 +58,11 @@ export default function DevicesPage() {
       lastSeen: '1 minute ago',
       battery: 92,
       canControl: false,
-      readings: { temperature: 23.5 }
-    },
+      isOn: false,
+      readings: {
+        temperature: 23.5
+      }
+    } as SensorDevice,
     {
       id: 'valve-001',
       name: 'Irrigation Valve A1',
@@ -65,8 +73,10 @@ export default function DevicesPage() {
       battery: 25,
       canControl: true,
       isOn: false,
-      readings: { pressure: 1.8 }
-    },
+      readings: {
+        pressure: 1.8
+      }
+    } as ValveDevice,
     {
       id: 'pump-002',
       name: 'Backup Pump',
@@ -74,9 +84,14 @@ export default function DevicesPage() {
       status: 'offline' as const,
       location: 'Sector C',
       lastSeen: '2 hours ago',
+      battery: 50,
       canControl: true,
-      isOn: false
-    },
+      isOn: false,
+      readings: {
+        pressure: 0,
+        flow: 0
+      }
+    } as PumpDevice,
     {
       id: 'sensor-002',
       name: 'Humidity Sensor',
@@ -86,8 +101,11 @@ export default function DevicesPage() {
       lastSeen: 'Just now',
       battery: 78,
       canControl: false,
-      readings: { temperature: 22.1 }
-    },
+      isOn: false,
+      readings: {
+        temperature: 22.1
+      }
+    } as SensorDevice,
     {
       id: 'valve-002',
       name: 'Emergency Shutoff Valve',
@@ -98,8 +116,10 @@ export default function DevicesPage() {
       battery: 95,
       canControl: true,
       isOn: true,
-      readings: { pressure: 2.8 }
-    }
+      readings: {
+        pressure: 2.8
+      }
+    } as ValveDevice
   ]);
 
   useEffect(() => {
@@ -121,16 +141,42 @@ export default function DevicesPage() {
       if (deviceId) {
         setDevices(prev => prev.map(device => {
           if (device.id === deviceId) {
-            return {
+            const baseUpdate = {
               ...device,
-              status: 'online',
-              lastSeen: 'Just now',
-              readings: {
-                ...device.readings,
-                temperature: lastMessage.data?.temperature,
-                pressure: lastMessage.data?.pressure
-              }
+              status: 'online' as const,
+              lastSeen: 'Just now'
             };
+
+            // Type guard to ensure we handle each device type correctly
+            switch (device.type) {
+              case 'pump':
+                return {
+                  ...baseUpdate,
+                  type: 'pump' as const,
+                  readings: {
+                    pressure: Number(lastMessage.data?.pressure) || 0,
+                    flow: Number(lastMessage.data?.flow) || 0
+                  }
+                };
+              case 'sensor':
+                return {
+                  ...baseUpdate,
+                  type: 'sensor' as const,
+                  readings: {
+                    temperature: Number(lastMessage.data?.temperature) || 0
+                  }
+                };
+              case 'valve':
+                return {
+                  ...baseUpdate,
+                  type: 'valve' as const,
+                  readings: {
+                    pressure: Number(lastMessage.data?.pressure) || 0
+                  }
+                };
+              default:
+                return device;
+            }
           }
           return device;
         }));
@@ -140,15 +186,19 @@ export default function DevicesPage() {
 
   const handleDeviceToggle = (deviceId: string) => {
     const device = devices.find(d => d.id === deviceId);
-    if (!device) return;
+    if (!device || !('isOn' in device)) return;
 
     const newState = !device.isOn;
     
-    setDevices(prev => prev.map(d => 
-      d.id === deviceId 
-        ? { ...d, isOn: newState }
-        : d
-    ));
+    setDevices(prev => prev.map(d => {
+      if (d.id === deviceId) {
+        return {
+          ...d,
+          isOn: newState
+        } as Device;
+      }
+      return d;
+    }));
 
     // In a real implementation, you would send a message to control the device
     console.log(`Device ${deviceId} ${newState ? 'turned on' : 'turned off'}`);

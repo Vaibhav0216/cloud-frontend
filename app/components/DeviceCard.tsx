@@ -1,53 +1,126 @@
 'use client';
 
 import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Switch } from './ui/switch';
+import { useWebSocket } from '../contexts/WebSocketProvider';
 import { 
-  Cpu, 
   Power, 
-  PowerOff, 
-  Activity,
-  Clock,
-  AlertTriangle
+  PowerOff,
+  Play,
+  Square
 } from 'lucide-react';
 
-interface DeviceData {
-  id: string;
-  name: string;
-  type: string;
-  status: 'online' | 'offline';
-  lastSeen: string;
-  temperature: number;
-  pressure: number;
-  waterLevel: number;
-  alerts: Array<{
-    type: 'critical' | 'warning' | 'info';
-    message: string;
-  }>;
-}
-
 interface DeviceCardProps {
-  device: DeviceData;
+  deviceId: string;
+  deviceName: string;
   userRole: 'admin' | 'operator' | 'viewer';
-  onControl: (deviceId: string, action: 'on' | 'off') => void;
 }
 
-export default function DeviceCard({ device, userRole, onControl }: DeviceCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
+export default function DeviceCard({ deviceId, deviceName, userRole }: DeviceCardProps) {
+  const [isAutoMode, setIsAutoMode] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
+  const { sendMessage } = useWebSocket();
+  
   const canControl = userRole === 'admin' || userRole === 'operator';
 
-  const getStatusColor = (status: string) => {
-    return status === 'online' ? 'status-online' : 'status-offline';
+  const handlePumpControl = (action: 'start' | 'stop') => {
+    if (!canControl) return;
+    
+    const payload = {
+      device_name: deviceId,
+      method: "COIL",
+      params: { 
+        cid: 4, 
+        state: action === 'start' ? 1 : 0 
+      }
+    };
+
+    sendMessage('device_control', payload);
+    setIsRunning(action === 'start');
   };
 
-  const getAlertColor = (type: string) => {
-    switch (type) {
-      case 'critical': return 'alert-critical';
-      case 'warning': return 'alert-warning';
-      case 'info': return 'alert-info';
-      default: return 'alert-info';
-    }
-  };
+  return (
+    <Card className="w-full hover:shadow-lg transition-shadow duration-200">
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center space-x-2">
+            {isRunning ? (
+              <Power className="h-5 w-5 text-green-500" />
+            ) : (
+              <PowerOff className="h-5 w-5 text-gray-400" />
+            )}
+            <div>
+              <CardTitle className="text-lg">{deviceName}</CardTitle>
+              <p className="text-sm text-muted-foreground">Pump Control</p>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        {/* Operation Mode Toggle */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">Operation Mode</span>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-muted-foreground">Auto</span>
+            <Switch
+              checked={!isAutoMode}
+              onCheckedChange={(checked: boolean) => setIsAutoMode(!checked)}
+              disabled={!canControl}
+            />
+            <span className="text-sm text-muted-foreground">Manual</span>
+          </div>
+        </div>
+
+        {/* Status and Controls */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Pump Status</span>
+            <Badge variant={isRunning ? "default" : "secondary"}>
+              {isRunning ? 'Running' : 'Stopped'}
+            </Badge>
+          </div>
+
+          {/* Manual Control Buttons */}
+          {!isAutoMode && canControl && (
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePumpControl('start')}
+                disabled={isRunning}
+                className="w-full"
+              >
+                <Play className="h-4 w-4 mr-2" />
+                Start
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePumpControl('stop')}
+                disabled={!isRunning}
+                className="w-full"
+              >
+                <Square className="h-4 w-4 mr-2" />
+                Stop
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Access Level Info */}
+        <div className="text-xs text-muted-foreground">
+          {canControl ? 
+            'You have control access to this device' : 
+            'View-only access'
+          }
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="amset-card p-6 hover:shadow-xl transition-shadow duration-300">

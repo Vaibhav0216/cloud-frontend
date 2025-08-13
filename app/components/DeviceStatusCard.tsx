@@ -15,18 +15,7 @@ import {
   Clock
 } from 'lucide-react';
 
-interface Device {
-  id: string;
-  name: string;
-  type: 'pump' | 'sensor' | 'valve';
-  status: 'online' | 'offline' | 'warning';
-  location: string;
-  lastSeen: string;
-  battery?: number;
-  canControl: boolean;
-  isOn?: boolean;
-  readings?: Record<string, number>;
-}
+import { Device } from '../types/device';
 
 interface DeviceStatusCardProps {
   device: Device;
@@ -94,6 +83,21 @@ export function DeviceStatusCard({
     }
   };
 
+  // const sendCommand = async (deviceId: string, isOn: boolean) => {
+    // const state = isOn ? 0 : 1; // Toggle state
+  const sendCommand = async () => {
+    console.log("RPC command");
+    const state = 1;
+    await fetch("https://nrj1481m2k.execute-api.ap-south-1.amazonaws.com", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        method: "COIL",
+        params: { cid: 4, state }
+      })
+    });
+  };
+
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="pb-3">
@@ -155,7 +159,7 @@ export function DeviceStatusCard({
         {canControl && device.status === 'online' && (
           <div className="pt-2">
             <Button
-              onClick={() => onToggle?.(device.id)}
+              onClick={() => sendCommand()}
               variant={device.isOn ? "destructive" : "default"}
               className="w-full"
               disabled={!isLive}
