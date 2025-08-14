@@ -37,10 +37,10 @@ export default function DeviceCard({ deviceId, deviceName, userRole }: DeviceCar
 
     const payload = {
         device_name: "Device_003",
-        method: "COIL",
+        method: "HOLDCOIL",
         params: {
-        cid: 10,
-        state: action === 'start' ? 1 : 0
+        cid: 103,
+        values: action === 'start' ? 1 : 0
         }
     };
 
