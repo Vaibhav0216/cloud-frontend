@@ -9,6 +9,12 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Calendar,
+  Clock,
+  CalendarDays,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -20,12 +26,32 @@ const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
   { icon: Cpu, label: 'Devices', href: '/devices' },
   { icon: Bell, label: 'Alerts', href: '/alerts' },
-  { icon: BarChart3, label: 'Reports', href: '/reports' },
+  { 
+    icon: BarChart3, 
+    label: 'Reports', 
+    href: '/reports',
+    hasDropdown: true,
+    dropdownItems: [
+      { icon: FileText, label: 'Log Report', href: '/reports/log' },
+      { icon: Calendar, label: 'Daily Report', href: '/reports/daily' },
+      { icon: Clock, label: 'Hourly Report', href: '/reports/hourly' },
+      { icon: CalendarDays, label: 'Monthly Report', href: '/reports/monthly' },
+    ]
+  },
   { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
 export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const [activeItem, setActiveItem] = useState('Dashboard');
+  const [expandedDropdowns, setExpandedDropdowns] = useState<string[]>([]);
+
+  const toggleDropdown = (label: string) => {
+    setExpandedDropdowns(prev => 
+      prev.includes(label) 
+        ? prev.filter(item => item !== label)
+        : [...prev, label]
+    );
+  };
 
   return (
     <div
@@ -66,6 +92,65 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeItem === item.label;
+          const isDropdownExpanded = expandedDropdowns.includes(item.label);
+
+          if (item.hasDropdown) {
+            return (
+              <div key={item.label}>
+                <button
+                  onClick={() => toggleDropdown(item.label)}
+                  className={`flex items-center justify-between w-full px-3 py-2 mb-2 rounded-xl transition-all relative group ${
+                    isActive
+                      ? 'bg-sidebar-accent/20 text-sidebar-accent-foreground font-semibold shadow-md'
+                      : 'hover:bg-sidebar-primary/10 hover:text-sidebar-primary text-muted-foreground'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <div className="relative">
+                      <Icon className="w-5 h-5" />
+                      <div
+                        className={`absolute left-[-10px] top-0 h-full w-[3px] bg-gradient-to-b from-sidebar-primary to-sidebar-accent rounded-r-full transform transition-transform duration-300 ${
+                          isActive
+                            ? 'scale-y-100'
+                            : 'scale-y-0 group-hover:scale-y-100'
+                        }`}
+                      />
+                    </div>
+                    {!isCollapsed && <span className="ml-3">{item.label}</span>}
+                  </div>
+                  {!isCollapsed && (
+                    isDropdownExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                  )}
+                </button>
+                
+                {/* Dropdown Items */}
+                {!isCollapsed && isDropdownExpanded && (
+                  <div className="ml-6 mb-2 space-y-1">
+                    {item.dropdownItems?.map((dropdownItem) => {
+                      const DropdownIcon = dropdownItem.icon;
+                      const isDropdownActive = activeItem === dropdownItem.label;
+                      
+                      return (
+                        <a
+                          key={dropdownItem.label}
+                          href={dropdownItem.href}
+                          onClick={() => setActiveItem(dropdownItem.label)}
+                          className={`flex items-center px-3 py-2 rounded-lg transition-all relative group ${
+                            isDropdownActive
+                              ? 'bg-sidebar-accent/20 text-sidebar-accent-foreground font-semibold'
+                              : 'hover:bg-sidebar-primary/10 hover:text-sidebar-primary text-muted-foreground'
+                          }`}
+                        >
+                          <DropdownIcon className="w-4 h-4" />
+                          <span className="ml-3 text-sm">{dropdownItem.label}</span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
 
           return (
             <a
