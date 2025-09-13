@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Sidebar from '../../components/Sidebar';
 import TopNavbar from '../../components/TopNavbar';
 import ProtectedRoute from '../../components/ProtectedRoute';
@@ -40,10 +41,11 @@ interface ChartData {
   totalFlow: number;
 }
 
-function LogReportContent() {
+function HourlyReportContent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { user } = useAuth();
   const { isConnected } = useWebSocket();
+  const pathname = usePathname();
   
   // Filter states
   const [fromDate, setFromDate] = useState('');
@@ -56,7 +58,7 @@ function LogReportContent() {
   const [showGraph, setShowGraph] = useState(false);
   
   // Active tab
-  const [activeTab, setActiveTab] = useState('log-report');
+  const [activeTab, setActiveTab] = useState('hourly-report');
 
   // Mock data for demonstration
   const mockLogData: LogRecord[] = [
@@ -132,7 +134,7 @@ function LogReportContent() {
               </div>
               
               {/* Navigation Tabs */}
-              <div className="flex space-x-1 bg-muted p-1 rounded-lg">
+              {/* <div className="flex space-x-1 bg-muted p-1 rounded-lg">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -150,7 +152,7 @@ function LogReportContent() {
                     </button>
                   );
                 })}
-              </div>
+              </div> */}
             </div>
 
             {/* Filters Section */}
@@ -364,10 +366,10 @@ function LogReportContent() {
   );
 }
 
-export default function LogReportPage() {
+export default function HourlyReportPage() {
   return (
     <ProtectedRoute>
-      <LogReportContent />
+      <HourlyReportContent />
     </ProtectedRoute>
   );
 }

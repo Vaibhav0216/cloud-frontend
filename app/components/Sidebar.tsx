@@ -33,8 +33,8 @@ const menuItems = [
     hasDropdown: true,
     dropdownItems: [
       { icon: FileText, label: 'Log Report', href: '/reports/log' },
-      { icon: Calendar, label: 'Daily Report', href: '/reports/daily' },
-      { icon: Clock, label: 'Hourly Report', href: '/reports/hourly' },
+      { icon: Calendar, label: 'Hourly Report', href: '/reports/hourly' },
+      { icon: Clock, label: 'Daily Report', href: '/reports/daily' },
       { icon: CalendarDays, label: 'Monthly Report', href: '/reports/monthly' },
     ]
   },

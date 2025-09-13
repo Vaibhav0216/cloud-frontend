@@ -132,7 +132,7 @@ function LogReportContent() {
               </div>
               
               {/* Navigation Tabs */}
-              <div className="flex space-x-1 bg-muted p-1 rounded-lg">
+              {/* <div className="flex space-x-1 bg-muted p-1 rounded-lg">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -150,7 +150,7 @@ function LogReportContent() {
                     </button>
                   );
                 })}
-              </div>
+              </div> */}
             </div>
 
             {/* Filters Section */}
