@@ -65,6 +65,394 @@ const mockDevices: Device[] = [
   }
 ];
 
+// Professional Energy Meter Data Types
+type EnergyMeterData = {
+  lineVoltage: {
+    ry: number;
+    yb: number;
+    rb: number;
+  };
+  phaseVoltage: {
+    r: number;
+    y: number;
+    b: number;
+  };
+  current: {
+    r: number;
+    y: number;
+    b: number;
+  };
+  frequency: number;
+  watt: number;
+  runningTime: number;
+  pumpStatus: 'ON' | 'OFF';
+  tripStatus: 'ON' | 'OFF';
+  valveStatus: 'ON' | 'OFF';
+  
+};
+
+// Professional Energy Meter Section Component
+function EnergyMeterSection() {
+  const [energyMeter1, setEnergyMeter1] = useState<EnergyMeterData>({
+    lineVoltage: { ry: 415, yb: 412, rb: 418 },
+    phaseVoltage: { r: 240, y: 238, b: 242 },
+    current: { r: 15.2, y: 14.8, b: 15.5 },
+    frequency: 50.2,
+    watt: 8.5,
+    runningTime: 45,
+    pumpStatus: 'ON',
+    tripStatus: 'OFF',
+    valveStatus: 'OFF'
+  });
+
+  // Expanded card state (modal-style)
+  const [expanded, setExpanded] = useState<'1' | '2' | '3' | null>(null);
+
+  const [energyMeter2, setEnergyMeter2] = useState<EnergyMeterData>({
+    lineVoltage: { ry: 420, yb: 415, rb: 422 },
+    phaseVoltage: { r: 243, y: 240, b: 245 },
+    current: { r: 16.1, y: 15.7, b: 16.4 },
+    frequency: 49.8,
+    watt: 9.2,
+    runningTime: 38,
+    pumpStatus: 'OFF',
+    tripStatus: 'OFF',
+    valveStatus: 'OFF'
+  });
+
+  const [energyMeter3, setEnergyMeter3] = useState<EnergyMeterData>({
+    lineVoltage: { ry: 415, yb: 412, rb: 418 },
+    phaseVoltage: { r: 240, y: 238, b: 242 },
+    current: { r: 15.2, y: 14.8, b: 15.5 },
+    frequency: 50.2,
+    watt: 8.5,
+    runningTime: 45,
+    pumpStatus: 'ON',
+    tripStatus: 'OFF',
+    valveStatus: 'OFF'
+  });
+
+  // Control Handlers
+  const handlePumpControl = async (meterId: '1' | '2' | '3', action: 'start' | 'stop' | 'enable') => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+      
+      const response = await fetch(`/api/energy-meter-${meterId}/control`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ action })
+      });
+
+      if (!response.ok) throw new Error(`Failed to ${action} pump`);
+      
+      // Update local state with optimistic updates
+      if (meterId === '1') {
+        setEnergyMeter1(prev => ({
+          ...prev,
+          pumpStatus: action === 'start' ? 'ON' : action === 'stop' ? 'OFF' : prev.pumpStatus
+        }));
+      } else if (meterId === '2') {
+        setEnergyMeter2(prev => ({
+          ...prev,
+          pumpStatus: action === 'start' ? 'ON' : action === 'stop' ? 'OFF' : prev.pumpStatus
+        }));
+      } else {
+        setEnergyMeter3(prev => ({
+          ...prev,
+          pumpStatus: action === 'start' ? 'ON' : action === 'stop' ? 'OFF' : prev.pumpStatus
+        }));
+      }
+    } catch (err) {
+      console.error(`Error controlling pump ${meterId}:`, err);
+    }
+  };
+
+  const handleTripToggle = async (meterId: '1' | '2' | '3') => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+      
+      const currentStatus = meterId === '1' ? energyMeter1.tripStatus : meterId === '2' ? energyMeter2.tripStatus : energyMeter3.tripStatus;
+      const newStatus = currentStatus === 'ON' ? 'OFF' : 'ON';
+      
+      const response = await fetch(`/api/energy-meter-${meterId}/trip`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) throw new Error("Failed to toggle trip");
+      
+      // Update local state
+      if (meterId === '1') {
+        setEnergyMeter1(prev => ({ ...prev, tripStatus: newStatus }));
+      } else if (meterId === '2') {
+        setEnergyMeter2(prev => ({ ...prev, tripStatus: newStatus }));
+      } else {
+        setEnergyMeter3(prev => ({ ...prev, tripStatus: newStatus }));
+      }
+    } catch (err) {
+      console.error(`Error toggling trip ${meterId}:`, err);
+    }
+  };
+
+  const handleValveToggle = async (meterId: '1' | '2' | '3') => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+      
+      const currentStatus = meterId === '1' ? energyMeter1.valveStatus : meterId === '2' ? energyMeter2.valveStatus : energyMeter3.valveStatus;
+      const newStatus = currentStatus === 'ON' ? 'OFF' : 'ON';
+      
+      const response = await fetch(`/api/energy-meter-${meterId}/valve`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) throw new Error("Failed to toggle valve");
+      
+      // Update local state
+      if (meterId === '1') {
+        setEnergyMeter1(prev => ({ ...prev, valveStatus: newStatus }));
+      } else if (meterId === '2') {
+        setEnergyMeter2(prev => ({ ...prev, valveStatus: newStatus }));
+      } else {
+        setEnergyMeter3(prev => ({ ...prev, valveStatus: newStatus }));
+      }
+    } catch (err) {
+      console.error(`Error toggling valve ${meterId}:`, err);
+    }
+  };
+
+  // Professional Energy Meter Card Component
+  const EnergyMeterCard = ({ 
+    title, 
+    data, 
+    meterId,
+    onExpand,
+    showClose
+  }: { 
+    title: string; 
+    data: EnergyMeterData; 
+    meterId: '1' | '2' | '3';
+    onExpand?: (id: '1' | '2' | '3') => void;
+    showClose?: boolean;
+  }) => (
+    <div className="amset-card p-6 rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-all duration-300 relative">
+      {/* Pop-up Icon */}
+      {!showClose ? (
+        <button onClick={() => onExpand?.(meterId)} className="absolute top-4 right-4 p-2 hover:bg-muted/50 rounded-lg transition-colors">
+          <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+          </svg>
+        </button>
+      ) : (
+        <button onClick={() => setExpanded(null)} className="absolute top-4 right-4 p-2 hover:bg-muted/50 rounded-lg transition-colors" aria-label="Close">
+          <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
+
+      {/* Card Header */}
+      <div className="mb-6">
+        <h3 className="text-xl font-bold text-foreground">{title}</h3>
+      </div>
+
+      {/* Data Grid - Responsive Layout */}
+      <div className="space-y-4">
+        {/* Line Voltage Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="text-muted-foreground font-medium">Line Voltage</div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Red-Yellow Phase Voltage</div>
+            <div className="text-lg font-bold text-foreground">{data.lineVoltage.ry}V</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Yellow-Blue Phase Voltage</div>
+            <div className="text-lg font-bold text-foreground">{data.lineVoltage.yb}V</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Red-Blue Phase Voltage</div>
+            <div className="text-lg font-bold text-foreground">{data.lineVoltage.rb}V</div>
+          </div>
+        </div>
+
+        {/* Phase Voltage Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="text-muted-foreground font-medium">Phase Voltage</div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Red Phase Voltage</div>
+            <div className="text-lg font-bold text-foreground">{data.phaseVoltage.r}V</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Yellow Phase Voltage</div>
+            <div className="text-lg font-bold text-foreground">{data.phaseVoltage.y}V</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Blue Phase Voltage</div>
+            <div className="text-lg font-bold text-foreground">{data.phaseVoltage.b}V</div>
+          </div>
+        </div>
+
+        {/* Current Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="text-muted-foreground font-medium">Current</div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Red Phase Current</div>
+            <div className="text-lg font-bold text-foreground">{data.current.r}A</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Yellow Phase Current</div>
+            <div className="text-lg font-bold text-foreground">{data.current.y}A</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Blue Phase Current</div>
+            <div className="text-lg font-bold text-foreground">{data.current.b}A</div>
+          </div>
+        </div>
+
+        {/* Additional Metrics Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="text-muted-foreground font-medium">Frequency</div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Power in Watts</div>
+            <div className="text-lg font-bold text-foreground">{data.watt} kW</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Running Time/min</div>
+            <div className="text-lg font-bold text-foreground">{data.runningTime} min</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-muted-foreground mb-1">Frequency</div>
+            <div className="text-lg font-bold text-foreground">{data.frequency} Hz</div>
+          </div>
+        </div>
+
+        {/* Control Buttons Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="text-muted-foreground font-medium">Controls</div>
+          
+          {/* Start Button */}
+          <button 
+            onClick={() => handlePumpControl(meterId, 'start')}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
+          >
+            Start
+          </button>
+          
+          {/* Stop Button */}
+          <button 
+            onClick={() => handlePumpControl(meterId, 'stop')}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
+          >
+            Stop
+          </button>
+          
+          {/* Enable/Disable Button (Meter 1: Enable, Meter 2/3: Disable) */}
+          <button 
+            onClick={() => handlePumpControl(meterId, 'enable')}
+            className={`${meterId === '1' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'} text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg`}
+          >
+            {meterId === '1' ? 'Enable' : 'Disable'}
+          </button>
+        </div>
+
+        {/* Toggle Controls Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="text-muted-foreground font-medium">Status</div>
+          
+          {/* Trip Indicator (clickable) */}
+          <div className="flex items-center justify-center">
+            <button onClick={() => handleTripToggle(meterId)} className="flex items-center focus:outline-none">
+              <span className={`w-6 h-6 rounded-full ${data.tripStatus === 'ON' ? 'bg-green-500' : 'bg-red-500'} ring-2 ring-white/20 transition-colors`}></span>
+              <span className="ml-2 text-sm text-muted-foreground">Trip {data.tripStatus}</span>
+            </button>
+          </div>
+          
+          {/* Valve Indicator (clickable) */}
+          <div className="flex items-center justify-center">
+            <button onClick={() => handleValveToggle(meterId)} className="flex items-center focus:outline-none">
+              <span className={`w-6 h-6 rounded-full ${data.valveStatus === 'ON' ? 'bg-green-500' : 'bg-red-500'} ring-2 ring-white/20 transition-colors`}></span>
+              <span className="ml-2 text-sm text-muted-foreground">Valve {data.valveStatus}</span>
+            </button>
+          </div>
+          
+          {/* Pump Status Indicator (clickable, same size as others) */}
+          <div className="flex items-center justify-center">
+            <button onClick={() => handlePumpControl(meterId, data.pumpStatus === 'ON' ? 'stop' : 'start')} className="flex items-center focus:outline-none">
+              <span className={`w-6 h-6 rounded-full ${data.pumpStatus === 'ON' ? 'bg-green-500' : 'bg-red-500'} ring-2 ring-white/20 transition-colors`}></span>
+              <span className="ml-2 text-sm text-muted-foreground">Pump {data.pumpStatus}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="my-8">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-foreground">Energy Monitoring</h2>
+        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span>Live Data</span>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <EnergyMeterCard 
+          title="Energy Meter 1" 
+          data={energyMeter1} 
+          meterId="1"
+          onExpand={(id) => setExpanded(id)} 
+        />
+        <EnergyMeterCard 
+          title="Energy Meter 2" 
+          data={energyMeter2} 
+          meterId="2"
+          onExpand={(id) => setExpanded(id)} 
+        />
+        {/* Meter 3 directly below Meter 1 on desktop, stacked on mobile */}
+        <EnergyMeterCard 
+          title="Energy Meter 3" 
+          data={energyMeter3} 
+          meterId="3"
+          onExpand={(id) => setExpanded(id)} 
+        />
+      </div>
+
+      {/* Expanded modal view */}
+      {expanded && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-6xl">
+            {expanded === '1' && (
+              <EnergyMeterCard title="Energy Meter 1" data={energyMeter1} meterId="1" showClose />
+            )}
+            {expanded === '2' && (
+              <EnergyMeterCard title="Energy Meter 2" data={energyMeter2} meterId="2" showClose />
+            )}
+            {expanded === '3' && (
+              <EnergyMeterCard title="Energy Meter 3" data={energyMeter3} meterId="3" showClose />
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Add this fetch function inside DashboardContent
 const fetchLatestTelemetry = async () => {
   try {
@@ -204,12 +592,15 @@ function DashboardContent() {
               <TelemetryChart
                 key={key}
                 data={telemetryData}
-                type={key}
+                type={key as "temperature" | "pressure" | "waterLevel"}
                 title={key.replace(/_/g, " ")}
                 color={["#ef4444", "#3b82f6", "#10b981"][idx % 3]}
               />
             ))}
           </div>
+
+          {/* Professional Energy Meter Section */}
+          <EnergyMeterSection />
 
           <h2 className="text-xl font-semibold mb-4">Device Status</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
