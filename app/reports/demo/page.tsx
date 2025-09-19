@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { User } from "lucide-react";
 import {
   LayoutDashboard,
   Cpu,
@@ -27,7 +26,6 @@ const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
   { icon: Cpu, label: 'Devices', href: '/devices' },
   { icon: Bell, label: 'Alerts', href: '/alerts' },
- 
   { 
     icon: BarChart3, 
     label: 'Reports', 
@@ -40,7 +38,6 @@ const menuItems = [
       { icon: CalendarDays, label: 'Monthly Report', href: '/reports/monthly' },
     ]
   },
-  { icon: User, label: 'User Log', href: '/user-log' },
   { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 

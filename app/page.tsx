@@ -100,9 +100,9 @@ function EnergyMeterSection() {
     frequency: 50.2,
     watt: 8.5,
     runningTime: 45,
-    pumpStatus: 'ON',
-    tripStatus: 'OFF',
-    valveStatus: 'OFF'
+    pumpStatus: 'OFF',
+    tripStatus: 'ON',
+    valveStatus: 'ON'
   });
 
   // Expanded card state (modal-style)
@@ -116,7 +116,7 @@ function EnergyMeterSection() {
     watt: 9.2,
     runningTime: 38,
     pumpStatus: 'OFF',
-    tripStatus: 'OFF',
+    tripStatus: 'ON',
     valveStatus: 'OFF'
   });
 
@@ -135,22 +135,24 @@ function EnergyMeterSection() {
   // Control Handlers
   const handlePumpControl = async (meterId: '1' | '2' | '3', action: 'start' | 'stop' | 'enable') => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token found");
+      // console.log(` ${action.toUpperCase()} button clicked for Meter ${meterId}, Action: ${action}`);
+      // const token = localStorage.getItem("token");
+      // if (!token) throw new Error("No token found");
       
-      const response = await fetch(`/api/energy-meter-${meterId}/control`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ action })
-      });
+      // const response = await fetch(`/api/energy-meter-${meterId}/control`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     "Authorization": `Bearer ${token}`
+      //   },
+      //   body: JSON.stringify({ action })
+      // });
 
-      if (!response.ok) throw new Error(`Failed to ${action} pump`);
-      
+      // if (!response.ok) throw new Error(`Failed to ${action} pump`);
+      // console.log(`Pump ${meterId} ${action} request sent successfully`);
       // Update local state with optimistic updates
       if (meterId === '1') {
+       
         setEnergyMeter1(prev => ({
           ...prev,
           pumpStatus: action === 'start' ? 'ON' : action === 'stop' ? 'OFF' : prev.pumpStatus
@@ -641,7 +643,7 @@ function DashboardContent() {
           </p>
 
           {/* Only allowed charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 my-6">
+          {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 my-6">
             {metricKeys.map((key, idx) => (
               <TelemetryChart
                 key={key}
@@ -651,7 +653,7 @@ function DashboardContent() {
                 color={["#ef4444", "#3b82f6", "#10b981"][idx % 3]}
               />
             ))}
-          </div>
+          </div> */}
 
           {/* Professional Energy Meter Section */}
           <EnergyMeterSection />

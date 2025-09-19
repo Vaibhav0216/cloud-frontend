@@ -254,65 +254,147 @@ function DailyReportContent() {
                 </CardContent>
               </Card>
             )}
+{/* Graph view */}
+              {showGraph && (
+              <div className="space-y-6">
+                {/* Flow Rate Chart */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <BarChart3 size={20} />
+                      <span>Flow Rate (L/min)</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                          <XAxis 
+                            dataKey="time" 
+                            stroke="#6B7280"
+                            fontSize={12}
+                          />
+                          <YAxis 
+                            stroke="#6B7280"
+                            fontSize={12}
+                            label={{ value: 'Flow Rate (L/min)', angle: -90, position: 'insideLeft' }}
+                          />
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: '#1F2937',
+                              border: '1px solid #374151',
+                              borderRadius: '8px',
+                              color: '#F9FAFB'
+                            }}
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="flowRate" 
+                            stroke="#10B981" 
+                            strokeWidth={2}
+                            name="Flow Rate (L/min)"
+                            dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            {/* Graph View */}
-            {showGraph && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <BarChart3 size={20} />
-                    <span>Data Visualization</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-96">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                        <XAxis 
-                          dataKey="time" 
-                          stroke="#6B7280"
-                          fontSize={12}
-                        />
-                        <YAxis 
-                          stroke="#6B7280"
-                          fontSize={12}
-                        />
-                        <Tooltip 
-                          contentStyle={{
-                            backgroundColor: '#1F2937',
-                            border: '1px solid #374151',
-                            borderRadius: '8px',
-                            color: '#F9FAFB'
-                          }}
-                        />
-                        <Legend />
-                        <Line 
-                          type="monotone" 
-                          dataKey="level" 
-                          stroke="#3B82F6" 
-                          strokeWidth={2}
-                          name="Level (%)"
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="flowRate" 
-                          stroke="#10B981" 
-                          strokeWidth={2}
-                          name="Flow Rate (L/min)"
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="totalFlow" 
-                          stroke="#F59E0B" 
-                          strokeWidth={2}
-                          name="Total Flow (L)"
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
+                {/* Level Chart */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <BarChart3 size={20} />
+                      <span>Level (%)</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                          <XAxis 
+                            dataKey="time" 
+                            stroke="#6B7280"
+                            fontSize={12}
+                          />
+                          <YAxis 
+                            stroke="#6B7280"
+                            fontSize={12}
+                            label={{ value: 'Level (%)', angle: -90, position: 'insideLeft' }}
+                          />
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: '#1F2937',
+                              border: '1px solid #374151',
+                              borderRadius: '8px',
+                              color: '#F9FAFB'
+                            }}
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="level" 
+                            stroke="#3B82F6" 
+                            strokeWidth={2}
+                            name="Level (%)"
+                            dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Total Flow Chart */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <BarChart3 size={20} />
+                      <span>Total Flow (L)</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                          <XAxis 
+                            dataKey="time" 
+                            stroke="#6B7280"
+                            fontSize={12}
+                          />
+                          <YAxis 
+                            stroke="#6B7280"
+                            fontSize={12}
+                            label={{ value: 'Total Flow (L)', angle: -90, position: 'insideLeft' }}
+                          />
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: '#1F2937',
+                              border: '1px solid #374151',
+                              borderRadius: '8px',
+                              color: '#F9FAFB'
+                            }}
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="totalFlow" 
+                            stroke="#F59E0B" 
+                            strokeWidth={2}
+                            name="Total Flow (L)"
+                            dot={{ fill: '#F59E0B', strokeWidth: 2, r: 4 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
 
             {/* Default View - Show when no table or graph is selected */}
