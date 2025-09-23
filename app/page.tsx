@@ -23,7 +23,9 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Save,
+  Maximize2
 } from "lucide-react";
 
 // Device types
@@ -529,13 +531,15 @@ function EnergyMeterSection() {
 function DashboardGridSection() {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
-  const Card = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => (
-    <div className="relative rounded-2xl bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300 p-4 md:p-5">
-      <button aria-label="Expand" onClick={() => setExpandedCard(id)} className="absolute top-3 left-3 p-2 rounded-md hover:bg-muted/50 transition-colors">
-        <svg viewBox="0 0 24 24" className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8V4h4M4 4l6 6M20 16v4h-4m4 0l-6-6"/></svg>
-      </button>
-      <div className="pl-8">
-        <h3 className="text-base md:text-lg font-semibold text-foreground mb-3">{title}</h3>
+  const Card = ({ id, title, children, showExpand = true }: { id: string; title: string; children: React.ReactNode; showExpand?: boolean }) => (
+    <div className="relative rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300 p-3 md:p-4">
+      {showExpand && (
+        <button aria-label="Expand" onClick={() => setExpandedCard(id)} className="absolute top-2 left-2 p-1.5 rounded-md hover:bg-muted/50 transition-colors">
+          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8V4h4M4 4l6 6M20 16v4h-4m4 0l-6-6"/></svg>
+        </button>
+      )}
+      <div className={showExpand ? "pl-7" : "pl-0"}>
+        <h3 className="text-base font-semibold text-foreground mb-2 text-center">{title}</h3>
         {children}
       </div>
     </div>
@@ -543,21 +547,60 @@ function DashboardGridSection() {
 
   const Tank = ({ percent }: { percent: number }) => (
     <div className="flex items-center justify-center">
-      <div className="relative w-28 h-28 md:w-32 md:h-32">
-        <svg viewBox="0 0 120 140" className="w-full h-full">
+      <div className="relative w-28 h-36 md:w-32 md:h-40">
+        <svg viewBox="0 0 100 120" className="w-full h-full">
           <defs>
             <clipPath id="tank-clip">
-              <path d="M20 40c0-10 20-18 40-18s40 8 40 18v60c0 10-20 18-40 18s-40-8-40-18V40z" />
+              <rect x="15" y="20" width="70" height="80" rx="35" ry="8" />
             </clipPath>
           </defs>
-          <path d="M20 40c0-10 20-18 40-18s40 8 40 18v60c0 10-20 18-40 18s-40-8-40-18V40z" fill="none" stroke="currentColor" className="text-muted-foreground" strokeWidth="4" />
+          {/* Tank outline - cylinder shape */}
+          <rect 
+            x="15" 
+            y="20" 
+            width="70" 
+            height="80" 
+            rx="35" 
+            ry="8" 
+            fill="none" 
+            stroke="#374151" 
+            strokeWidth="2" 
+          />
+          {/* Top ellipse */}
+          <ellipse 
+            cx="50" 
+            cy="20" 
+            rx="35" 
+            ry="8" 
+            fill="none" 
+            stroke="#374151" 
+            strokeWidth="2" 
+          />
+          {/* Water fill */}
           <g clipPath="url(#tank-clip)">
-            <rect x="0" y="0" width="120" height="140" fill="transparent" />
-            <rect x="0" y={140 - (percent / 100) * 78 - 40} width="120" height="140" className="fill-blue-500/70" />
+            <rect 
+              x="15" 
+              y={100 - (percent / 100) * 80} 
+              width="70" 
+              height={(percent / 100) * 80} 
+              fill="#3B82F6" 
+              opacity="0.8" 
+            />
           </g>
+          {/* Water surface ellipse */}
+          {percent > 0 && (
+            <ellipse 
+              cx="50" 
+              cy={100 - (percent / 100) * 80} 
+              rx="35" 
+              ry="8" 
+              fill="#3B82F6" 
+              opacity="0.9" 
+            />
+          )}
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="px-2 py-1 text-sm md:text-base font-bold bg-background/70 rounded-md border border-border">{percent} %</span>
+          <span className="px-2 py-1 text-sm md:text-base font-bold text-gray-800 bg-white/90 rounded-md border border-gray-300 shadow-sm">{percent}%</span>
         </div>
       </div>
     </div>
@@ -574,7 +617,7 @@ function DashboardGridSection() {
   );
 
   const StatusDot = ({ on }: { on: boolean }) => (
-    <span className={`w-4 h-4 md:w-5 md:h-5 rounded-full ${on ? 'bg-green-500' : 'bg-red-500'} inline-block shadow`} />
+    <span className={`w-6 h-6 md:w-7 md:h-7 rounded-full ${on ? 'bg-green-500' : 'bg-red-500'} inline-block shadow`} />
   );
 
   // local demo state
@@ -597,66 +640,66 @@ function DashboardGridSection() {
     <div className="grid grid-cols-12 gap-2 items-center">
       <div className="col-span-3 text-sm md:text-base">{label}</div>
       <div className="col-span-2 flex justify-center"><Toggle checked={false} onChange={() => {}} /></div>
-      <div className="col-span-3"><input className="w-full bg-muted text-foreground rounded-md px-3 py-2 text-sm" defaultValue="12:00:00 AM" /></div>
-      <div className="col-span-3"><input className="w-full bg-muted text-foreground rounded-md px-3 py-2 text-sm" defaultValue="12:00:00 AM" /></div>
+      <div className="col-span-3"><input className="w-full bg-muted text-foreground rounded-md px-3 py-2 text-sm text-center" defaultValue="12:00:00 AM" /></div>
+      <div className="col-span-3"><input className="w-full bg-muted text-foreground rounded-md px-3 py-2 text-sm text-center" defaultValue="12:00:00 AM" /></div>
       <div className="col-span-1 flex justify-center"><StatusDot on={false} /></div>
     </div>
   );
 
   return (
-    <div className="my-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        <Card id="ug" title="Under Ground">
+    <div className="my-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <Card id="ug" title="Under Ground" showExpand={false}>
           <Tank percent={ugLevel} />
         </Card>
-        <Card id="oh" title="Over Head">
+        <Card id="oh" title="Over Head" showExpand={false}>
           <Tank percent={ohLevel} />
         </Card>
-        <Card id="flow" title="Flow Meter">
+        <Card id="flow" title="Flow Meter" showExpand={false}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <svg viewBox="0 0 24 24" className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18"/><path d="M3 12c4-6 14-6 18 0"/></svg>
-              <div className="text-2xl font-bold">{flow} m³/hr</div>
+              <svg viewBox="0 0 24 24" className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18"/><path d="M3 12c4-6 14-6 18 0"/></svg>
+              <div className="text-xl font-bold">{flow} m³/hr</div>
             </div>
           </div>
         </Card>
-        <Card id="tds" title="TDS Value">
+        <Card id="tds" title="TDS Value" showExpand={false}>
           <div className="flex items-center gap-3">
-            <svg viewBox="0 0 24 24" className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l8 8 8-8"/><path d="M4 12l8 8 8-8"/></svg>
-            <div className="text-2xl font-bold text-red-500">{tds} mg/L</div>
+            <svg viewBox="0 0 24 24" className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l8 8 8-8"/><path d="M4 12l8 8 8-8"/></svg>
+            <div className="text-xl font-bold text-red-500">{tds} mg/L</div>
           </div>
         </Card>
-        <Card id="cons" title="Daily Consumption">
+        <Card id="cons" title="Daily Consumption" showExpand={false}>
           <div className="flex items-center gap-3">
-            <svg viewBox="0 0 24 24" className="w-8 h-8 text-pink-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-3 4 4 3-3"/></svg>
-            <div className="text-2xl font-bold">{consumption} m³</div>
+            <svg viewBox="0 0 24 24" className="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-3 4 4 3-3"/></svg>
+            <div className="text-xl font-bold">{consumption} m³</div>
           </div>
         </Card>
         <Card id="bp" title="BORING PUMP">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3"><span className="text-sm">Pump Status</span><StatusDot on={bpRunning} /></div>
-            <div className="flex items-center gap-4"><span>Manual</span><Toggle checked={bpAuto} onChange={() => setBpAuto(v => !v)} /><span>Auto</span></div>
-            <div className="flex items-center gap-4">
+          <div className="space-y-4 text-center">
+            <div className="flex items-center justify-center gap-3"><span className="text-sm">Pump Status</span><StatusDot on={bpRunning} /></div>
+            <div className="flex items-center justify-center gap-4"><span>Manual</span><Toggle checked={bpAuto} onChange={() => setBpAuto(v => !v)} /><span>Auto</span></div>
+            <div className="flex items-center justify-center gap-4">
               <ActionButton color="green" onClick={() => setBpRunning(true)}>START</ActionButton>
               <ActionButton color="red" onClick={() => setBpRunning(false)}>STOP</ActionButton>
             </div>
           </div>
         </Card>
         <Card id="ohp" title="OH PUMP">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3"><span className="text-sm">Pump Status</span><StatusDot on={ohpRunning} /></div>
-            <div className="flex items-center gap-4"><span>Manual</span><Toggle checked={ohpAuto} onChange={() => setOhpAuto(v => !v)} /><span>Auto</span></div>
-            <div className="flex items-center gap-4">
+          <div className="space-y-4 text-center">
+            <div className="flex items-center justify-center gap-3"><span className="text-sm">Pump Status</span><StatusDot on={ohpRunning} /></div>
+            <div className="flex items-center justify-center gap-4"><span>Manual</span><Toggle checked={ohpAuto} onChange={() => setOhpAuto(v => !v)} /><span>Auto</span></div>
+            <div className="flex items-center justify-center gap-4">
               <ActionButton color="green" onClick={() => setOhpRunning(true)}>START</ActionButton>
               <ActionButton color="red" onClick={() => setOhpRunning(false)}>STOP</ActionButton>
             </div>
           </div>
         </Card>
         <Card id="valve" title="Valve OH">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3"><span className="text-sm">Valve Status</span><StatusDot on={valveOpen} /></div>
-            <div className="flex items-center gap-4"><span>Manual</span><Toggle checked={valveAuto} onChange={() => setValveAuto(v => !v)} /><span>Auto</span></div>
-            <div className="flex items-center gap-4">
+          <div className="space-y-4 text-center">
+            <div className="flex items-center justify-center gap-3"><span className="text-sm">Valve Status</span><StatusDot on={valveOpen} /></div>
+            <div className="flex items-center justify-center gap-4"><span>Manual</span><Toggle checked={valveAuto} onChange={() => setValveAuto(v => !v)} /><span>Auto</span></div>
+            <div className="flex items-center justify-center gap-4">
               <ActionButton color="red" onClick={() => setValveOpen(false)}>Close</ActionButton>
               <ActionButton color="green" onClick={() => setValveOpen(true)}>Open</ActionButton>
             </div>
@@ -674,8 +717,8 @@ function DashboardGridSection() {
             <div className="grid grid-cols-12 gap-2 text-sm text-muted-foreground">
               <div className="col-span-3">Slot</div>
               <div className="col-span-2 text-center">Enable</div>
-              <div className="col-span-3">Start Time</div>
-              <div className="col-span-3">End Time</div>
+              <div className="col-span-3 text-center">Start Time</div>
+              <div className="col-span-3 text-center">End Time</div>
               <div className="col-span-1 text-center">Status</div>
             </div>
             {['Schedule 1','Schedule 2','Schedule 3','Schedule 4','BP Schedule 1','BP Schedule 2'].map(s => (
@@ -835,12 +878,12 @@ function WaterManagementSection() {
     </button>
   );
 
-  const CardShell = ({ id, title, children, icon }: { id: string; title: string; children: React.ReactNode; icon?: React.ReactNode }) => (
-    <div className="relative rounded-xl bg-card border border-border shadow-sm hover:shadow-lg transition-all duration-300 p-6 group">
-      <ExpandButton onClick={() => setExpanded(id)} />
-      <div className="flex items-center gap-3 mb-4">
+  const CardShell = ({ id, title, children, icon, showExpand = true }: { id: string; title: string; children: React.ReactNode; icon?: React.ReactNode; showExpand?: boolean }) => (
+    <div className="relative rounded-xl bg-card border border-border shadow-sm hover:shadow-lg transition-all duration-300 p-4 group">
+      {showExpand && <ExpandButton onClick={() => setExpanded(id)} />}
+      <div className="flex items-center justify-center gap-2 mb-3">
         {icon && <div className="text-blue-500">{icon}</div>}
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        <h3 className="text-lg font-semibold text-foreground text-center">{title}</h3>
       </div>
       {children}
     </div>
@@ -848,22 +891,22 @@ function WaterManagementSection() {
 
   const StatusIndicator = ({ status, label }: { status: boolean; label?: string }) => (
     <div className="flex items-center gap-2">
-      <div className={`w-3 h-3 rounded-full ${status ? 'bg-green-500' : 'bg-red-500'} shadow-sm`} />
+      <div className={`w-5 h-5 rounded-full ${status ? 'bg-green-500' : 'bg-red-500'} shadow-sm`} />
       {label && <span className="text-sm text-muted-foreground">{label}</span>}
     </div>
   );
 
   const ModernToggle = ({ checked, onChange, labels }: { checked: boolean; onChange: () => void; labels?: [string, string] }) => (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       {labels && <span className="text-sm text-muted-foreground">{labels[0]}</span>}
       <button 
         onClick={onChange} 
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 ${
+        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-all duration-200 ${
           checked ? 'bg-green-600' : 'bg-muted'
         }`}
       >
         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-          checked ? 'translate-x-6' : 'translate-x-1'
+          checked ? 'translate-x-5' : 'translate-x-1'
         }`} />
       </button>
       {labels && <span className="text-sm text-muted-foreground">{labels[1]}</span>}
@@ -900,33 +943,60 @@ function WaterManagementSection() {
   // Modern Subcomponents
   const TankLevel = ({ percent }: { percent: number }) => (
     <div className="flex items-center justify-center">
-      <div className="relative w-32 h-32">
-        <svg viewBox="0 0 120 140" className="w-full h-full">
+      <div className="relative w-24 h-32">
+        <svg viewBox="0 0 100 120" className="w-full h-full">
           <defs>
             <clipPath id="tank-clip-modern">
-              <path d="M20 40c0-10 20-18 40-18s40 8 40 18v60c0 10-20 18-40 18s-40-8-40-18V40z" />
+              <rect x="15" y="20" width="70" height="80" rx="35" ry="8" />
             </clipPath>
           </defs>
-          <path 
-            d="M20 40c0-10 20-18 40-18s40 8 40 18v60c0 10-20 18-40 18s-40-8-40-18V40z" 
+          {/* Tank outline - cylinder shape */}
+          <rect 
+            x="15" 
+            y="20" 
+            width="70" 
+            height="80" 
+            rx="35" 
+            ry="8" 
             fill="none" 
-            stroke="currentColor" 
-            className="text-muted-foreground" 
-            strokeWidth="3" 
+            stroke="#374151" 
+            strokeWidth="2" 
           />
+          {/* Top ellipse */}
+          <ellipse 
+            cx="50" 
+            cy="20" 
+            rx="35" 
+            ry="8" 
+            fill="none" 
+            stroke="#374151" 
+            strokeWidth="2" 
+          />
+          {/* Water fill */}
           <g clipPath="url(#tank-clip-modern)">
-            <rect x="0" y="0" width="120" height="140" fill="transparent" />
             <rect 
-              x="0" 
-              y={140 - (percent / 100) * 78 - 40} 
-              width="120" 
-              height="140" 
-              className="fill-blue-500/80" 
+              x="15" 
+              y={100 - (percent / 100) * 80} 
+              width="70" 
+              height={(percent / 100) * 80} 
+              fill="#3B82F6" 
+              opacity="0.8" 
             />
           </g>
+          {/* Water surface ellipse */}
+          {percent > 0 && (
+            <ellipse 
+              cx="50" 
+              cy={100 - (percent / 100) * 80} 
+              rx="35" 
+              ry="8" 
+              fill="#3B82F6" 
+              opacity="0.9" 
+            />
+          )}
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="px-3 py-1 text-lg font-bold bg-background/90 rounded-lg border border-border shadow-sm">
+          <span className="px-2 py-0.5 text-base font-bold text-gray-800 bg-white/90 rounded-md border border-gray-300 shadow-sm">
             {percent}%
           </span>
         </div>
@@ -941,13 +1011,13 @@ function WaterManagementSection() {
     color?: string;
     label?: string;
   }) => (
-    <div className="flex items-center gap-4">
-      <div className="p-3 rounded-lg bg-muted/50">
+    <div className="flex items-center gap-3">
+      <div className="p-2 rounded-lg bg-muted/50">
         {icon}
       </div>
       <div>
         {label && <p className="text-sm text-muted-foreground mb-1">{label}</p>}
-        <div className={`text-2xl font-bold ${color || 'text-foreground'}`}>
+        <div className={`text-xl font-bold ${color || 'text-foreground'}`}>
           {value}{unit ? ` ${unit}` : ''}
         </div>
       </div>
@@ -971,22 +1041,22 @@ function WaterManagementSection() {
     onToggleAuto: () => void;
     icon?: React.ReactNode;
   }) => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {icon && <div className="text-blue-500">{icon}</div>}
-          <span className="text-sm font-medium text-muted-foreground">{title} Status</span>
-        </div>
+    <div className="space-y-4 text-center">
+      <div className="flex items-center justify-center gap-2">
+        {icon && <div className="text-blue-500">{icon}</div>}
+        <span className="text-sm font-medium text-muted-foreground">{title} Status</span>
         <StatusIndicator status={running} />
       </div>
       
-      <ModernToggle 
-        checked={auto} 
-        onChange={onToggleAuto} 
-        labels={['Manual', 'Auto']} 
-      />
+      <div className="flex justify-center">
+        <ModernToggle 
+          checked={auto} 
+          onChange={onToggleAuto} 
+          labels={['Manual', 'Auto']} 
+        />
+      </div>
       
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-center gap-2">
         <ActionButton 
           variant="start" 
           onClick={onStart}
@@ -1006,22 +1076,22 @@ function WaterManagementSection() {
   );
 
   const PowerStatus = () => (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border/50">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
         <div className="flex items-center gap-2">
           <Power className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-medium">Mains</span>
         </div>
         <StatusIndicator status={!mainsOff} />
       </div>
-      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border/50">
+      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
         <div className="flex items-center gap-2">
           <Droplets className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-medium">UG Normal</span>
         </div>
         <StatusIndicator status={ugNormal} />
       </div>
-      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border/50">
+      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
         <div className="flex items-center gap-2">
           <Droplets className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-medium">OH Normal</span>
@@ -1032,19 +1102,19 @@ function WaterManagementSection() {
   );
 
   const ScheduleTable = () => (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="grid grid-cols-12 gap-3 text-sm font-medium text-muted-foreground border-b border-border pb-2">
+      <div className="grid grid-cols-12 gap-2 text-xs md:text-sm font-medium text-muted-foreground border-b border-border pb-1">
         <div className="col-span-3">Slot</div>
         <div className="col-span-2 text-center">Enable</div>
-        <div className="col-span-3">Start Time</div>
-        <div className="col-span-3">End Time</div>
+        <div className="col-span-3 text-center">Start Time</div>
+        <div className="col-span-3 text-center">End Time</div>
         <div className="col-span-1 text-center">Status</div>
       </div>
       
       {/* Schedule Rows */}
       {schedule.map((row, idx) => (
-        <div key={row.label} className="grid grid-cols-12 gap-3 items-center p-3 bg-muted/20 rounded-lg border border-border/50">
+        <div key={row.label} className="grid grid-cols-12 gap-2 items-center p-2 bg-muted/20 rounded-lg border border-border/50">
           <div className="col-span-3 text-sm font-medium">{row.label}</div>
           <div className="col-span-2 flex justify-center">
             <ModernToggle 
@@ -1054,28 +1124,27 @@ function WaterManagementSection() {
           </div>
           <div className="col-span-3">
             <input 
-              className="w-full bg-background text-foreground rounded-md px-3 py-2 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors" 
+              className="w-full bg-background text-foreground rounded-md px-2 py-1.5 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors text-center" 
               value={row.start} 
               onChange={e => setSchedule(s => s.map((r, i) => i === idx ? { ...r, start: e.target.value } : r))} 
             />
           </div>
           <div className="col-span-3">
             <input 
-              className="w-full bg-background text-foreground rounded-md px-3 py-2 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors" 
+              className="w-full bg-background text-foreground rounded-md px-2 py-1.5 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors text-center" 
               value={row.end} 
               onChange={e => setSchedule(s => s.map((r, i) => i === idx ? { ...r, end: e.target.value } : r))} 
             />
           </div>
           <div className="col-span-1 flex justify-center">
-            <StatusIndicator status={row.status} />
+            <div className={`w-6 h-6 rounded-full ${row.status ? 'bg-green-500' : 'bg-red-500'} shadow-sm`} />
           </div>
         </div>
       ))}
       
       {/* Submit Button */}
-      {/* Submit Button */}
-<div className="pt-4 flex justify-center">
-  <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105 shadow-md">
+<div className="pt-3 flex justify-center">
+  <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all duration-200 hover:scale-105 shadow-md">
     <CheckCircle className="w-4 h-4" />
     Submit
   </button>
@@ -1086,27 +1155,27 @@ function WaterManagementSection() {
 
  // Modern Layout Sections 
 const MonitoringCards = (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-    <CardShell id="ug" title="Under Ground Tank" icon={<Droplets className="w-5 h-5" />}>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+    <CardShell id="ug" title="Under Ground Tank" icon={<Droplets className="w-5 h-5" />} showExpand={false}>
       <TankLevel percent={ugLevel} />
     </CardShell>
 
-    <CardShell id="oh" title="Over Head Tank" icon={<Droplets className="w-5 h-5" />}>
+    <CardShell id="oh" title="Over Head Tank" icon={<Droplets className="w-5 h-5" />} showExpand={false}>
       <TankLevel percent={ohLevel} />
     </CardShell>
 
-    <CardShell id="flow" title="Flow Meter" icon={<Activity className="w-5 h-5" />}>
+    <CardShell id="flow" title="Flow Meter" icon={<Activity className="w-5 h-5" />} showExpand={false}>
       <MetricDisplay 
-        icon={<Activity className="w-6 h-6 text-blue-500" />} 
+        icon={<Activity className="w-5 h-5 text-blue-500" />} 
         value={flow} 
         unit="m³/hr" 
         label="Flow Rate"
       />
     </CardShell>
 
-    <CardShell id="tds" title="TDS Value" icon={<Gauge className="w-5 h-5" />}>
+    <CardShell id="tds" title="TDS Value" icon={<Gauge className="w-5 h-5" />} showExpand={false}>
       <MetricDisplay 
-        icon={<Gauge className="w-6 h-6 text-red-500" />} 
+        icon={<Gauge className="w-5 h-5 text-red-500" />} 
         value={tds} 
         unit="mg/L" 
         color="text-red-500"
@@ -1114,9 +1183,9 @@ const MonitoringCards = (
       />
     </CardShell>
 
-    <CardShell id="cons" title="Daily Consumption" icon={<TrendingUp className="w-5 h-5" />}>
+    <CardShell id="cons" title="Daily Consumption" icon={<TrendingUp className="w-5 h-5" />} showExpand={false}>
       <MetricDisplay 
-        icon={<TrendingUp className="w-6 h-6 text-green-500" />} 
+        icon={<TrendingUp className="w-5 h-5 text-green-500" />} 
         value={consumption} 
         unit="m³" 
         color="text-green-500"
@@ -1127,7 +1196,7 @@ const MonitoringCards = (
 );
 
 const ControlCards = (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-center">
     <CardShell id="bp" title="BORING PUMP" icon={<Zap className="w-5 h-5" />}>
       <ControlPanel 
         title="Pump" 
@@ -1153,22 +1222,22 @@ const ControlCards = (
     </CardShell>
 
     <CardShell id="valve" title="Valve OH" icon={<Gauge className="w-5 h-5" />}>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Gauge className="w-4 h-4 text-blue-500" />
-            <span className="text-sm font-medium text-muted-foreground">Valve Status</span>
-          </div>
+      <div className="space-y-4 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <Gauge className="w-4 h-4 text-blue-500" />
+          <span className="text-sm font-medium text-muted-foreground">Valve Status</span>
           <StatusIndicator status={valveOpen} />
         </div>
         
-        <ModernToggle 
-          checked={valveAuto} 
-          onChange={() => setValveAuto(v => !v)} 
-          labels={['Manual', 'Auto']} 
-        />
+        <div className="flex justify-center">
+          <ModernToggle 
+            checked={valveAuto} 
+            onChange={() => setValveAuto(v => !v)} 
+            labels={['Manual', 'Auto']} 
+          />
+        </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 justify-center">
           <ActionButton 
             variant="close" 
             onClick={() => setValveOpen(false)}
@@ -1187,15 +1256,15 @@ const ControlCards = (
       </div>
     </CardShell>
 
-    <CardShell id="power" title="Power Status" icon={<Power className="w-5 h-5" />}>
-      <PowerStatus />
+    <CardShell id="power" title="Power Status" icon={<Power className="w-7 h-7" />}>
+      <PowerStatus /> {/* bigger icon indicator */}
     </CardShell>
   </div>
 );
 
 
   return (
-    <div className="my-8 space-y-8">
+    <div className="my-6 space-y-6">
       {/* Section Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -1441,6 +1510,10 @@ function DashboardContent() {
   const [telemetryData, setTelemetryData] = useState<any[]>([]);
   const { isConnected, lastMessage, sendMessage } = useWebSocket();
   const { user } = useAuth();
+  // Level-set inputs
+  const [lowLevelSet, setLowLevelSet] = useState<string>("");
+  const [highLevelSet, setHighLevelSet] = useState<string>("");
+  const [levelToggleOn, setLevelToggleOn] = useState<boolean>(false);
 
   // Fields we care about
   const allowedMetrics = ["temperature", "pressure", "waterLevel"];
@@ -1561,6 +1634,64 @@ function DashboardContent() {
 
           {/* Operations Grid Section (between Energy Meter 3 and Device Status) */}
           <WaterManagementSection />
+
+          {/* Level Set Controls */}
+          <div className="mt-6 flex flex-col md:flex-row items-start justify-start gap-4 w-full">
+            {/* Low Level Set */}
+            <div className="relative rounded-xl bg-card border border-border shadow-sm p-4 w-full max-w-[280px] min-h-[240px] flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-foreground flex-1 text-center">Low Level Set</h3>
+                <div className="flex items-center gap-2">
+                  <button aria-label="Save" className="p-1.5 rounded-md hover:bg-muted/50"><Save className="w-4 h-4 text-muted-foreground"/></button>
+                  <button aria-label="Expand" className="p-1.5 rounded-md hover:bg-muted/50"><Maximize2 className="w-4 h-4 text-muted-foreground"/></button>
+                </div>
+              </div>
+              <label className="block text-sm font-medium text-muted-foreground mb-2 text-center">Low Level Set:</label>
+              <input
+                value={lowLevelSet}
+                onChange={(e)=>setLowLevelSet(e.target.value)}
+                placeholder="Enter value"
+                className="w-full bg-background text-foreground rounded-md px-3 py-2 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors text-center placeholder:text-center"
+              />
+              <button className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-semibold text-center">Save</button>
+            </div>
+
+            {/* High Level Set */}
+            <div className="relative rounded-xl bg-card border border-border shadow-sm p-4 w-full max-w-[280px] min-h-[240px] flex flex-col">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-foreground flex-1 text-center">High Level Set</h3>
+                <div className="flex items-center gap-2">
+                  <button aria-label="Save" className="p-1.5 rounded-md hover:bg-muted/50"><Save className="w-4 h-4 text-muted-foreground"/></button>
+                  <button aria-label="Expand" className="p-1.5 rounded-md hover:bg-muted/50"><Maximize2 className="w-4 h-4 text-muted-foreground"/></button>
+                </div>
+              </div>
+              <label className="block text-sm font-medium text-muted-foreground mb-2 text-center">High Level Set:</label>
+              <input
+                value={highLevelSet}
+                onChange={(e)=>setHighLevelSet(e.target.value)}
+                placeholder="Enter value"
+                className="w-full bg-background text-foreground rounded-md px-3 py-2 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors text-center placeholder:text-center"
+              />
+              <button className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-semibold text-center">Save</button>
+            </div>
+
+            {/* Toggle Control */}
+            <div className="relative rounded-xl bg-card border border-border shadow-sm p-4 w-full max-w-[280px] min-h-[240px] flex flex-col items-center">
+              <div className="flex items-center justify-between mb-3 w-full">
+                <h3 className="text-lg font-semibold text-foreground flex-1 text-center">Toggle Control</h3>
+              </div>
+              <div className="flex-1 flex flex-col items-center justify-center gap-3 w-full">
+                <button
+                  onClick={() => setLevelToggleOn(v => !v)}
+                  className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors ${levelToggleOn ? 'bg-green-600' : 'bg-muted'}`}
+                >
+                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform ${levelToggleOn ? 'translate-x-7' : 'translate-x-1'}`} />
+                </button>
+                <span className="text-sm text-muted-foreground">{levelToggleOn ? 'ON' : 'OFF'}</span>
+              </div>
+            </div>
+          </div>
+
 
           <h2 className="text-xl font-semibold mb-4">Device Status</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
