@@ -38,23 +38,22 @@ export default function TelemetryChart({ data, type, title, color }: TelemetryCh
       default: return '';
     }
   };
-
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString();
   };
 
   return (
-    <div className="amset-card p-6">
-      <div className="flex items-center space-x-2 mb-4">
+    <div className="amset-card p-4 md:p-6">
+      <div className="flex items-center gap-2 mb-2 md:mb-4">
         <div className="text-blue-600 dark:text-blue-400">
           {getIcon()}
         </div>
-        <h3 className="font-semibold text-gray-900 dark:text-white">
+        <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base md:text-lg">
           {title}
         </h3>
       </div>
 
-      <div className="h-64">
+      <div className="h-56 sm:h-64 md:h-72 lg:h-80">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -93,15 +92,15 @@ export default function TelemetryChart({ data, type, title, color }: TelemetryCh
 
       {/* Current Value Display */}
       {data.length > 0 && (
-        <div className="mt-4 text-center">
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="mt-3 md:mt-4 text-center">
+          <div className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             {data[data.length - 1][type]}{getUnit()}
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
             Current {title}
           </div>
         </div>
       )}
     </div>
   );
-} 
+}

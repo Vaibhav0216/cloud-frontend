@@ -53,20 +53,18 @@ export default function TopNavbar({ user, isConnected }: TopNavbarProps) {
       localStorage.setItem('theme', 'light');
     }
   };
-
   const handleLogout = () => {
     logout();
     setShowUserMenu(false);
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-6">
+    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-14 md:h-16 flex items-center justify-between px-4 md:px-6 sm:px-6">
       <div className="flex items-center space-x-4">
         <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
           {user.company} Dashboard
         </h1>
       </div>
-
       <div className="flex items-center space-x-4">
         {/* Connection Status */}
         <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700">

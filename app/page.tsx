@@ -6,19 +6,21 @@ import Sidebar from "./components/Sidebar";
 import TopNavbar from "./components/TopNavbar";
 import PumpControlCard from "./components/PumpControlCard";
 import TelemetryChart from "./components/TelemetryChart";
+import ResourcePieChart from "./components/ResourcePieChart";
+import BarGraphComponent from "./components/BarGraphComponent";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useWebSocket } from "./contexts/WebSocketProvider";
 import { useAuth } from "./contexts/AuthContext";
-import { 
-  Droplets, 
-  Gauge, 
-  Zap, 
-  Activity, 
-  TrendingUp, 
-  Power, 
-  Play, 
-  Square, 
-  ToggleLeft, 
+import {
+  Droplets,
+  Gauge,
+  Zap,
+  Activity,
+  TrendingUp,
+  Power,
+  Play,
+  Square,
+  ToggleLeft,
   ToggleRight,
   Clock,
   CheckCircle,
@@ -106,7 +108,7 @@ type EnergyMeterData = {
   pumpStatus: 'ON' | 'OFF';
   tripStatus: 'ON' | 'OFF';
   valveStatus: 'ON' | 'OFF';
-  
+
 };
 
 // Professional Energy Meter Section Component
@@ -156,7 +158,7 @@ function EnergyMeterSection() {
       // console.log(` ${action.toUpperCase()} button clicked for Meter ${meterId}, Action: ${action}`);
       // const token = localStorage.getItem("token");
       // if (!token) throw new Error("No token found");
-      
+
       // const response = await fetch(`/api/energy-meter-${meterId}/control`, {
       //   method: "POST",
       //   headers: {
@@ -170,7 +172,7 @@ function EnergyMeterSection() {
       // console.log(`Pump ${meterId} ${action} request sent successfully`);
       // Update local state with optimistic updates
       if (meterId === '1') {
-       
+
         setEnergyMeter1(prev => ({
           ...prev,
           pumpStatus: action === 'start' ? 'ON' : action === 'stop' ? 'OFF' : prev.pumpStatus
@@ -195,10 +197,10 @@ function EnergyMeterSection() {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
-      
+
       const currentStatus = meterId === '1' ? energyMeter1.tripStatus : meterId === '2' ? energyMeter2.tripStatus : energyMeter3.tripStatus;
       const newStatus = currentStatus === 'ON' ? 'OFF' : 'ON';
-      
+
       const response = await fetch(`/api/energy-meter-${meterId}/trip`, {
         method: "POST",
         headers: {
@@ -209,7 +211,7 @@ function EnergyMeterSection() {
       });
 
       if (!response.ok) throw new Error("Failed to toggle trip");
-      
+
       // Update local state
       if (meterId === '1') {
         setEnergyMeter1(prev => ({ ...prev, tripStatus: newStatus }));
@@ -227,10 +229,10 @@ function EnergyMeterSection() {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
-      
+
       const currentStatus = meterId === '1' ? energyMeter1.valveStatus : meterId === '2' ? energyMeter2.valveStatus : energyMeter3.valveStatus;
       const newStatus = currentStatus === 'ON' ? 'OFF' : 'ON';
-      
+
       const response = await fetch(`/api/energy-meter-${meterId}/valve`, {
         method: "POST",
         headers: {
@@ -241,7 +243,7 @@ function EnergyMeterSection() {
       });
 
       if (!response.ok) throw new Error("Failed to toggle valve");
-      
+
       // Update local state
       if (meterId === '1') {
         setEnergyMeter1(prev => ({ ...prev, valveStatus: newStatus }));
@@ -256,15 +258,15 @@ function EnergyMeterSection() {
   };
 
   // Professional Energy Meter Card Component
-  const EnergyMeterCard = ({ 
-    title, 
-    data, 
+  const EnergyMeterCard = ({
+    title,
+    data,
     meterId,
     onExpand,
     showClose
-  }: { 
-    title: string; 
-    data: EnergyMeterData; 
+  }: {
+    title: string;
+    data: EnergyMeterData;
     meterId: '1' | '2' | '3';
     onExpand?: (id: '1' | '2' | '3') => void;
     showClose?: boolean;
@@ -363,25 +365,25 @@ function EnergyMeterSection() {
         {/* Control Buttons Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div className="text-muted-foreground font-medium">Controls</div>
-          
+
           {/* Start Button */}
-          <button 
+          <button
             onClick={() => handlePumpControl(meterId, 'start')}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
           >
             Start
           </button>
-          
+
           {/* Stop Button */}
-          <button 
+          <button
             onClick={() => handlePumpControl(meterId, 'stop')}
             className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
           >
             Stop
           </button>
-          
+
           {/* Enable/Disable Button (Meter 1: Enable, Meter 2/3: Disable) */}
-          <button 
+          <button
             onClick={() => handlePumpControl(meterId, 'enable')}
             className={`${meterId === '1' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'} text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg`}
           >
@@ -392,7 +394,7 @@ function EnergyMeterSection() {
         {/* Toggle Controls Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div className="text-muted-foreground font-medium">Status</div>
-          
+
           {/* Trip Indicator (clickable) */}
           <div className="flex items-center justify-center">
             <button onClick={() => handleTripToggle(meterId)} className="flex items-center focus:outline-none">
@@ -400,7 +402,7 @@ function EnergyMeterSection() {
               <span className="ml-2 text-sm text-muted-foreground">Trip {data.tripStatus}</span>
             </button>
           </div>
-          
+
           {/* Valve Indicator (clickable) */}
           <div className="flex items-center justify-center">
             <button onClick={() => handleValveToggle(meterId)} className="flex items-center focus:outline-none">
@@ -408,7 +410,7 @@ function EnergyMeterSection() {
               <span className="ml-2 text-sm text-muted-foreground">Valve {data.valveStatus}</span>
             </button>
           </div>
-          
+
           {/* Pump Status Indicator (clickable, same size as others) */}
           <div className="flex items-center justify-center">
             <button onClick={() => handlePumpControl(meterId, data.pumpStatus === 'ON' ? 'stop' : 'start')} className="flex items-center focus:outline-none">
@@ -430,80 +432,80 @@ function EnergyMeterSection() {
           {/* <span>Live Data</span> */}
         </div>
       </div>
-      
+
       {/* Filter Tank Components - horizontal responsive row */}
       <div className="mb-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6">
           {/* Filter Tank Level */}
           <div className="bg-white rounded-xl shadow-md hover:shadow-lg p-5 min-h-[180px] min-w-[160px] flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-200">
-            <svg className="w-12 h-12 text-blue-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7c0-1.657 3.582-3 8-3s8 1.343 8 3v10c0 1.657-3.582 3-8 3s-8-1.343-8-3V7z"/><path d="M4 11c0 1.657 3.582 3 8 3s8-1.343 8-3"/></svg>
+            <svg className="w-12 h-12 text-blue-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7c0-1.657 3.582-3 8-3s8 1.343 8 3v10c0 1.657-3.582 3-8 3s-8-1.343-8-3V7z" /><path d="M4 11c0 1.657 3.582 3 8 3s8-1.343 8-3" /></svg>
             <p className="text-sm text-gray-600 font-medium">Filter Tank Level</p>
             <div className="text-3xl font-bold text-blue-600">79 %</div>
           </div>
           {/* Battery Voltage Bund Pump */}
           <div className="bg-white rounded-xl shadow-md hover:shadow-lg p-5 min-h-[180px] min-w-[160px] flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-200">
-            <svg className="w-12 h-12 text-green-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="7" width="18" height="11" rx="2"/><path d="M7 7V4h10v3"/></svg>
+            <svg className="w-12 h-12 text-green-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="7" width="18" height="11" rx="2" /><path d="M7 7V4h10v3" /></svg>
             <p className="text-sm text-gray-600 font-medium">Battery Voltage Bund Pump</p>
             <div className="text-2xl font-bold text-green-600">24.59 V.DC</div>
           </div>
           {/* Flow Rate */}
           <div className="bg-white rounded-xl shadow-md hover:shadow-lg p-5 min-h-[180px] min-w-[160px] flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-200">
-            <svg className="w-12 h-12 text-blue-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h16"/><path d="M4 12c4-6 12-6 16 0"/></svg>
+            <svg className="w-12 h-12 text-blue-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h16" /><path d="M4 12c4-6 12-6 16 0" /></svg>
             <p className="text-sm text-gray-600 font-medium">Flow rate</p>
             <div className="text-2xl font-bold text-blue-600">0 m³/hr</div>
           </div>
           {/* Level Set Low */}
           <div className="bg-white rounded-xl shadow-md hover:shadow-lg p-5 min-h-[180px] min-w-[160px] flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-200">
-            <svg className="w-12 h-12 text-orange-500 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-6"/></svg>
+            <svg className="w-12 h-12 text-orange-500 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-6" /></svg>
             <p className="text-sm text-gray-600 font-medium">Level Set Low</p>
             <div className="text-2xl font-bold text-orange-500">80 %</div>
           </div>
           {/* Level High Set */}
           <div className="bg-white rounded-xl shadow-md hover:shadow-lg p-5 min-h-[180px] min-w-[160px] flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-200">
-            <svg className="w-12 h-12 text-red-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l18 18"/><path d="M21 3L3 21"/></svg>
+            <svg className="w-12 h-12 text-red-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l18 18" /><path d="M21 3L3 21" /></svg>
             <p className="text-sm text-gray-600 font-medium">Level High Set</p>
             <div className="text-2xl font-bold text-red-600">98 %</div>
           </div>
           {/* Daily Consumption */}
           <div className="bg-white rounded-xl shadow-md hover:shadow-lg p-5 min-h-[180px] min-w-[160px] flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-200">
-            <svg className="w-12 h-12 text-red-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-3 4 4 3-3"/></svg>
+            <svg className="w-12 h-12 text-red-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M7 15l3-3 4 4 3-3" /></svg>
             <p className="text-sm text-gray-600 font-medium">Daily Consumption</p>
             <div className="text-2xl font-bold text-red-600">821520 ltrs</div>
           </div>
           {/* Battery Voltage Filter House */}
           <div className="bg-white rounded-xl shadow-md hover:shadow-lg p-5 min-h-[180px] min-w-[160px] flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-200">
-            <svg className="w-12 h-12 text-green-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="7" width="18" height="11" rx="2"/><path d="M7 7V4h10v3"/></svg>
+            <svg className="w-12 h-12 text-green-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="7" width="18" height="11" rx="2" /><path d="M7 7V4h10v3" /></svg>
             <p className="text-sm text-gray-600 font-medium">Battery Voltage Filter House</p>
             <div className="text-2xl font-bold text-green-600">25.71 V.DC</div>
           </div>
           {/* Auto Manual */}
           <div className="bg-white rounded-xl shadow-md hover:shadow-lg p-5 min-h-[180px] min-w-[160px] flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-200">
-            <svg className="w-12 h-12 text-green-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3 7h7l-5.5 4 2.5 7-7-4-7 4 2.5-7L2 9h7z"/></svg>
+            <svg className="w-12 h-12 text-green-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3 7h7l-5.5 4 2.5 7-7-4-7 4 2.5-7L2 9h7z" /></svg>
             <p className="text-sm text-gray-600 font-medium">Auto Manual</p>
             <div className="text-2xl font-bold text-green-600">Auto</div>
           </div>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <EnergyMeterCard 
-          title="Energy Meter 1" 
-          data={energyMeter1} 
+        <EnergyMeterCard
+          title="Energy Meter 1"
+          data={energyMeter1}
           meterId="1"
-          onExpand={(id) => setExpanded(id)} 
+          onExpand={(id) => setExpanded(id)}
         />
-        <EnergyMeterCard 
-          title="Energy Meter 2" 
-          data={energyMeter2} 
+        <EnergyMeterCard
+          title="Energy Meter 2"
+          data={energyMeter2}
           meterId="2"
-          onExpand={(id) => setExpanded(id)} 
+          onExpand={(id) => setExpanded(id)}
         />
         {/* Meter 3 directly below Meter 1 on desktop, stacked on mobile */}
-        <EnergyMeterCard 
-          title="Energy Meter 3" 
-          data={energyMeter3} 
+        <EnergyMeterCard
+          title="Energy Meter 3"
+          data={energyMeter3}
           meterId="3"
-          onExpand={(id) => setExpanded(id)} 
+          onExpand={(id) => setExpanded(id)}
         />
       </div>
 
@@ -535,7 +537,7 @@ function DashboardGridSection() {
     <div className="relative rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300 p-3 md:p-4">
       {showExpand && (
         <button aria-label="Expand" onClick={() => setExpandedCard(id)} className="absolute top-2 left-2 p-1.5 rounded-md hover:bg-muted/50 transition-colors">
-          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8V4h4M4 4l6 6M20 16v4h-4m4 0l-6-6"/></svg>
+          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8V4h4M4 4l6 6M20 16v4h-4m4 0l-6-6" /></svg>
         </button>
       )}
       <div className={showExpand ? "pl-7" : "pl-0"}>
@@ -555,47 +557,47 @@ function DashboardGridSection() {
             </clipPath>
           </defs>
           {/* Tank outline - cylinder shape */}
-          <rect 
-            x="15" 
-            y="20" 
-            width="70" 
-            height="80" 
-            rx="35" 
-            ry="8" 
-            fill="none" 
-            stroke="#374151" 
-            strokeWidth="2" 
+          <rect
+            x="15"
+            y="20"
+            width="70"
+            height="80"
+            rx="35"
+            ry="8"
+            fill="none"
+            stroke="#374151"
+            strokeWidth="2"
           />
           {/* Top ellipse */}
-          <ellipse 
-            cx="50" 
-            cy="20" 
-            rx="35" 
-            ry="8" 
-            fill="none" 
-            stroke="#374151" 
-            strokeWidth="2" 
+          <ellipse
+            cx="50"
+            cy="20"
+            rx="35"
+            ry="8"
+            fill="none"
+            stroke="#374151"
+            strokeWidth="2"
           />
           {/* Water fill */}
           <g clipPath="url(#tank-clip)">
-            <rect 
-              x="15" 
-              y={100 - (percent / 100) * 80} 
-              width="70" 
-              height={(percent / 100) * 80} 
-              fill="#3B82F6" 
-              opacity="0.8" 
+            <rect
+              x="15"
+              y={100 - (percent / 100) * 80}
+              width="70"
+              height={(percent / 100) * 80}
+              fill="#3B82F6"
+              opacity="0.8"
             />
           </g>
           {/* Water surface ellipse */}
           {percent > 0 && (
-            <ellipse 
-              cx="50" 
-              cy={100 - (percent / 100) * 80} 
-              rx="35" 
-              ry="8" 
-              fill="#3B82F6" 
-              opacity="0.9" 
+            <ellipse
+              cx="50"
+              cy={100 - (percent / 100) * 80}
+              rx="35"
+              ry="8"
+              fill="#3B82F6"
+              opacity="0.9"
             />
           )}
         </svg>
@@ -639,7 +641,7 @@ function DashboardGridSection() {
   const ScheduleRow = ({ label }: { label: string }) => (
     <div className="grid grid-cols-12 gap-2 items-center">
       <div className="col-span-3 text-sm md:text-base">{label}</div>
-      <div className="col-span-2 flex justify-center"><Toggle checked={false} onChange={() => {}} /></div>
+      <div className="col-span-2 flex justify-center"><Toggle checked={false} onChange={() => { }} /></div>
       <div className="col-span-3"><input className="w-full bg-muted text-foreground rounded-md px-3 py-2 text-sm text-center" defaultValue="12:00:00 AM" /></div>
       <div className="col-span-3"><input className="w-full bg-muted text-foreground rounded-md px-3 py-2 text-sm text-center" defaultValue="12:00:00 AM" /></div>
       <div className="col-span-1 flex justify-center"><StatusDot on={false} /></div>
@@ -658,20 +660,20 @@ function DashboardGridSection() {
         <Card id="flow" title="Flow Meter" showExpand={false}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <svg viewBox="0 0 24 24" className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18"/><path d="M3 12c4-6 14-6 18 0"/></svg>
+              <svg viewBox="0 0 24 24" className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18" /><path d="M3 12c4-6 14-6 18 0" /></svg>
               <div className="text-xl font-bold">{flow} m³/hr</div>
             </div>
           </div>
         </Card>
         <Card id="tds" title="TDS Value" showExpand={false}>
           <div className="flex items-center gap-3">
-            <svg viewBox="0 0 24 24" className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l8 8 8-8"/><path d="M4 12l8 8 8-8"/></svg>
+            <svg viewBox="0 0 24 24" className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l8 8 8-8" /><path d="M4 12l8 8 8-8" /></svg>
             <div className="text-xl font-bold text-red-500">{tds} mg/L</div>
           </div>
         </Card>
         <Card id="cons" title="Daily Consumption" showExpand={false}>
           <div className="flex items-center gap-3">
-            <svg viewBox="0 0 24 24" className="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-3 4 4 3-3"/></svg>
+            <svg viewBox="0 0 24 24" className="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M7 15l3-3 4 4 3-3" /></svg>
             <div className="text-xl font-bold">{consumption} m³</div>
           </div>
         </Card>
@@ -721,7 +723,7 @@ function DashboardGridSection() {
               <div className="col-span-3 text-center">End Time</div>
               <div className="col-span-1 text-center">Status</div>
             </div>
-            {['Schedule 1','Schedule 2','Schedule 3','Schedule 4','BP Schedule 1','BP Schedule 2'].map(s => (
+            {['Schedule 1', 'Schedule 2', 'Schedule 3', 'Schedule 4', 'BP Schedule 1', 'BP Schedule 2'].map(s => (
               <ScheduleRow key={s} label={s} />
             ))}
             <div className="pt-2"><button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold">Submit</button></div>
@@ -734,7 +736,7 @@ function DashboardGridSection() {
           <div className="w-full max-w-6xl">
             <div className="relative rounded-2xl bg-card border border-border shadow-lg p-6">
               <button aria-label="Close" onClick={() => setExpandedCard(null)} className="absolute top-4 right-4 p-2 rounded-md hover:bg-muted/50 transition-colors">
-                <svg viewBox="0 0 24 24" className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                <svg viewBox="0 0 24 24" className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
               {/* Render the selected card content again in large view */}
               {expandedCard === 'ug' && (
@@ -751,19 +753,19 @@ function DashboardGridSection() {
               )}
               {expandedCard === 'flow' && (
                 <div className="flex items-center gap-4">
-                  <svg viewBox="0 0 24 24" className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18"/><path d="M3 12c4-6 14-6 18 0"/></svg>
+                  <svg viewBox="0 0 24 24" className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h18" /><path d="M3 12c4-6 14-6 18 0" /></svg>
                   <div className="text-4xl font-bold">{flow} m³/hr</div>
                 </div>
               )}
               {expandedCard === 'tds' && (
                 <div className="flex items-center gap-4">
-                  <svg viewBox="0 0 24 24" className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l8 8 8-8"/><path d="M4 12l8 8 8-8"/></svg>
+                  <svg viewBox="0 0 24 24" className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l8 8 8-8" /><path d="M4 12l8 8 8-8" /></svg>
                   <div className="text-4xl font-bold text-red-500">{tds} mg/L</div>
                 </div>
               )}
               {expandedCard === 'cons' && (
                 <div className="flex items-center gap-4">
-                  <svg viewBox="0 0 24 24" className="w-10 h-10 text-pink-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-3 4 4 3-3"/></svg>
+                  <svg viewBox="0 0 24 24" className="w-10 h-10 text-pink-500" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="M7 15l3-3 4 4 3-3" /></svg>
                   <div className="text-4xl font-bold">{consumption} m³</div>
                 </div>
               )}
@@ -811,7 +813,7 @@ function DashboardGridSection() {
               {expandedCard === 'schedule' && (
                 <div className="space-y-4">
                   <h3 className="text-xl font-semibold">Schedule</h3>
-                  {['Schedule 1','Schedule 2','Schedule 3','Schedule 4','BP Schedule 1','BP Schedule 2'].map(s => (
+                  {['Schedule 1', 'Schedule 2', 'Schedule 3', 'Schedule 4', 'BP Schedule 1', 'BP Schedule 2'].map(s => (
                     <ScheduleRow key={s} label={s} />
                   ))}
                 </div>
@@ -859,21 +861,21 @@ function WaterManagementSection() {
 
   // Modern UI Components
   const ExpandButton = ({ onClick }: { onClick: () => void }) => (
-    <button 
-      aria-label="Expand" 
-      onClick={onClick} 
+    <button
+      aria-label="Expand"
+      onClick={onClick}
       className="absolute top-4 right-4 p-2 rounded-lg hover:bg-muted/50 transition-all duration-200 group"
     >
-      <svg 
-        viewBox="0 0 24 24" 
-        className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="2" 
-        strokeLinecap="round" 
+      <svg
+        viewBox="0 0 24 24"
+        className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M4 8V4h4M4 4l6 6M20 16v4h-4m4 0l-6-6"/>
+        <path d="M4 8V4h4M4 4l6 6M20 16v4h-4m4 0l-6-6" />
       </svg>
     </button>
   );
@@ -899,40 +901,37 @@ function WaterManagementSection() {
   const ModernToggle = ({ checked, onChange, labels }: { checked: boolean; onChange: () => void; labels?: [string, string] }) => (
     <div className="flex items-center gap-2">
       {labels && <span className="text-sm text-muted-foreground">{labels[0]}</span>}
-      <button 
-        onClick={onChange} 
-        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-all duration-200 ${
-          checked ? 'bg-green-600' : 'bg-muted'
-        }`}
+      <button
+        onClick={onChange}
+        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-all duration-200 ${checked ? 'bg-green-600' : 'bg-muted'
+          }`}
       >
-        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-          checked ? 'translate-x-5' : 'translate-x-1'
-        }`} />
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${checked ? 'translate-x-5' : 'translate-x-1'
+          }`} />
       </button>
       {labels && <span className="text-sm text-muted-foreground">{labels[1]}</span>}
     </div>
   );
 
-  const ActionButton = ({ 
-    variant, 
-    children, 
-    onClick, 
-    icon 
-  }: { 
-    variant: 'start' | 'stop' | 'open' | 'close'; 
-    children: React.ReactNode; 
+  const ActionButton = ({
+    variant,
+    children,
+    onClick,
+    icon
+  }: {
+    variant: 'start' | 'stop' | 'open' | 'close';
+    children: React.ReactNode;
     onClick?: () => void;
     icon?: React.ReactNode;
   }) => {
     const isPositive = variant === 'start' || variant === 'open';
     return (
-      <button 
-        onClick={onClick} 
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all duration-200 hover:scale-105 shadow-md ${
-          isPositive 
-            ? 'bg-green-600 hover:bg-green-700 text-white' 
+      <button
+        onClick={onClick}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all duration-200 hover:scale-105 shadow-md ${isPositive
+            ? 'bg-green-600 hover:bg-green-700 text-white'
             : 'bg-red-600 hover:bg-red-700 text-white'
-        }`}
+          }`}
       >
         {icon}
         {children}
@@ -951,47 +950,47 @@ function WaterManagementSection() {
             </clipPath>
           </defs>
           {/* Tank outline - cylinder shape */}
-          <rect 
-            x="15" 
-            y="20" 
-            width="70" 
-            height="80" 
-            rx="35" 
-            ry="8" 
-            fill="none" 
-            stroke="#374151" 
-            strokeWidth="2" 
+          <rect
+            x="15"
+            y="20"
+            width="70"
+            height="80"
+            rx="35"
+            ry="8"
+            fill="none"
+            stroke="#374151"
+            strokeWidth="2"
           />
           {/* Top ellipse */}
-          <ellipse 
-            cx="50" 
-            cy="20" 
-            rx="35" 
-            ry="8" 
-            fill="none" 
-            stroke="#374151" 
-            strokeWidth="2" 
+          <ellipse
+            cx="50"
+            cy="20"
+            rx="35"
+            ry="8"
+            fill="none"
+            stroke="#374151"
+            strokeWidth="2"
           />
           {/* Water fill */}
           <g clipPath="url(#tank-clip-modern)">
-            <rect 
-              x="15" 
-              y={100 - (percent / 100) * 80} 
-              width="70" 
-              height={(percent / 100) * 80} 
-              fill="#3B82F6" 
-              opacity="0.8" 
+            <rect
+              x="15"
+              y={100 - (percent / 100) * 80}
+              width="70"
+              height={(percent / 100) * 80}
+              fill="#3B82F6"
+              opacity="0.8"
             />
           </g>
           {/* Water surface ellipse */}
           {percent > 0 && (
-            <ellipse 
-              cx="50" 
-              cy={100 - (percent / 100) * 80} 
-              rx="35" 
-              ry="8" 
-              fill="#3B82F6" 
-              opacity="0.9" 
+            <ellipse
+              cx="50"
+              cy={100 - (percent / 100) * 80}
+              rx="35"
+              ry="8"
+              fill="#3B82F6"
+              opacity="0.9"
             />
           )}
         </svg>
@@ -1004,10 +1003,10 @@ function WaterManagementSection() {
     </div>
   );
 
-  const MetricDisplay = ({ icon, value, unit, color, label }: { 
-    icon: React.ReactNode; 
-    value: string | number; 
-    unit?: string; 
+  const MetricDisplay = ({ icon, value, unit, color, label }: {
+    icon: React.ReactNode;
+    value: string | number;
+    unit?: string;
     color?: string;
     label?: string;
   }) => (
@@ -1024,20 +1023,20 @@ function WaterManagementSection() {
     </div>
   );
 
-  const ControlPanel = ({ 
-    title, 
-    running, 
-    auto, 
-    onStart, 
-    onStop, 
+  const ControlPanel = ({
+    title,
+    running,
+    auto,
+    onStart,
+    onStop,
     onToggleAuto,
-    icon 
-  }: { 
-    title: string; 
-    running: boolean; 
-    auto: boolean; 
-    onStart: () => void; 
-    onStop: () => void; 
+    icon
+  }: {
+    title: string;
+    running: boolean;
+    auto: boolean;
+    onStart: () => void;
+    onStop: () => void;
     onToggleAuto: () => void;
     icon?: React.ReactNode;
   }) => (
@@ -1047,25 +1046,25 @@ function WaterManagementSection() {
         <span className="text-sm font-medium text-muted-foreground">{title} Status</span>
         <StatusIndicator status={running} />
       </div>
-      
+
       <div className="flex justify-center">
-        <ModernToggle 
-          checked={auto} 
-          onChange={onToggleAuto} 
-          labels={['Manual', 'Auto']} 
+        <ModernToggle
+          checked={auto}
+          onChange={onToggleAuto}
+          labels={['Manual', 'Auto']}
         />
       </div>
-      
+
       <div className="flex items-center justify-center gap-2">
-        <ActionButton 
-          variant="start" 
+        <ActionButton
+          variant="start"
           onClick={onStart}
           icon={<Play className="w-4 h-4" />}
         >
           START
         </ActionButton>
-        <ActionButton 
-          variant="stop" 
+        <ActionButton
+          variant="stop"
           onClick={onStop}
           icon={<Square className="w-4 h-4" />}
         >
@@ -1111,29 +1110,29 @@ function WaterManagementSection() {
         <div className="col-span-3 text-center">End Time</div>
         <div className="col-span-1 text-center">Status</div>
       </div>
-      
+
       {/* Schedule Rows */}
       {schedule.map((row, idx) => (
         <div key={row.label} className="grid grid-cols-12 gap-2 items-center p-2 bg-muted/20 rounded-lg border border-border/50">
           <div className="col-span-3 text-sm font-medium">{row.label}</div>
           <div className="col-span-2 flex justify-center">
-            <ModernToggle 
-              checked={row.enabled} 
-              onChange={() => setSchedule(s => s.map((r, i) => i === idx ? { ...r, enabled: !r.enabled } : r))} 
+            <ModernToggle
+              checked={row.enabled}
+              onChange={() => setSchedule(s => s.map((r, i) => i === idx ? { ...r, enabled: !r.enabled } : r))}
             />
           </div>
           <div className="col-span-3">
-            <input 
-              className="w-full bg-background text-foreground rounded-md px-2 py-1.5 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors text-center" 
-              value={row.start} 
-              onChange={e => setSchedule(s => s.map((r, i) => i === idx ? { ...r, start: e.target.value } : r))} 
+            <input
+              className="w-full bg-background text-foreground rounded-md px-2 py-1.5 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors text-center"
+              value={row.start}
+              onChange={e => setSchedule(s => s.map((r, i) => i === idx ? { ...r, start: e.target.value } : r))}
             />
           </div>
           <div className="col-span-3">
-            <input 
-              className="w-full bg-background text-foreground rounded-md px-2 py-1.5 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors text-center" 
-              value={row.end} 
-              onChange={e => setSchedule(s => s.map((r, i) => i === idx ? { ...r, end: e.target.value } : r))} 
+            <input
+              className="w-full bg-background text-foreground rounded-md px-2 py-1.5 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors text-center"
+              value={row.end}
+              onChange={e => setSchedule(s => s.map((r, i) => i === idx ? { ...r, end: e.target.value } : r))}
             />
           </div>
           <div className="col-span-1 flex justify-center">
@@ -1141,126 +1140,126 @@ function WaterManagementSection() {
           </div>
         </div>
       ))}
-      
+
       {/* Submit Button */}
-<div className="pt-3 flex justify-center">
-  <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all duration-200 hover:scale-105 shadow-md">
-    <CheckCircle className="w-4 h-4" />
-    Submit
-  </button>
-</div>
+      <div className="pt-3 flex justify-center">
+        <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all duration-200 hover:scale-105 shadow-md">
+          <CheckCircle className="w-4 h-4" />
+          Submit
+        </button>
+      </div>
 
     </div>
   );
 
- // Modern Layout Sections 
-const MonitoringCards = (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-    <CardShell id="ug" title="Under Ground Tank" icon={<Droplets className="w-5 h-5" />} showExpand={false}>
-      <TankLevel percent={ugLevel} />
-    </CardShell>
+  // Modern Layout Sections 
+  const MonitoringCards = (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <CardShell id="ug" title="Under Ground Tank" icon={<Droplets className="w-5 h-5" />} showExpand={false}>
+        <TankLevel percent={ugLevel} />
+      </CardShell>
 
-    <CardShell id="oh" title="Over Head Tank" icon={<Droplets className="w-5 h-5" />} showExpand={false}>
-      <TankLevel percent={ohLevel} />
-    </CardShell>
+      <CardShell id="oh" title="Over Head Tank" icon={<Droplets className="w-5 h-5" />} showExpand={false}>
+        <TankLevel percent={ohLevel} />
+      </CardShell>
 
-    <CardShell id="flow" title="Flow Meter" icon={<Activity className="w-5 h-5" />} showExpand={false}>
-      <MetricDisplay 
-        icon={<Activity className="w-5 h-5 text-blue-500" />} 
-        value={flow} 
-        unit="m³/hr" 
-        label="Flow Rate"
-      />
-    </CardShell>
+      <CardShell id="flow" title="Flow Meter" icon={<Activity className="w-5 h-5" />} showExpand={false}>
+        <MetricDisplay
+          icon={<Activity className="w-5 h-5 text-blue-500" />}
+          value={flow}
+          unit="m³/hr"
+          label="Flow Rate"
+        />
+      </CardShell>
 
-    <CardShell id="tds" title="TDS Value" icon={<Gauge className="w-5 h-5" />} showExpand={false}>
-      <MetricDisplay 
-        icon={<Gauge className="w-5 h-5 text-red-500" />} 
-        value={tds} 
-        unit="mg/L" 
-        color="text-red-500"
-        label="Total Dissolved Solids"
-      />
-    </CardShell>
+      <CardShell id="tds" title="TDS Value" icon={<Gauge className="w-5 h-5" />} showExpand={false}>
+        <MetricDisplay
+          icon={<Gauge className="w-5 h-5 text-red-500" />}
+          value={tds}
+          unit="mg/L"
+          color="text-red-500"
+          label="Total Dissolved Solids"
+        />
+      </CardShell>
 
-    <CardShell id="cons" title="Daily Consumption" icon={<TrendingUp className="w-5 h-5" />} showExpand={false}>
-      <MetricDisplay 
-        icon={<TrendingUp className="w-5 h-5 text-green-500" />} 
-        value={consumption} 
-        unit="m³" 
-        color="text-green-500"
-        label="Daily Usage"
-      />
-    </CardShell>
-  </div>
-);
+      <CardShell id="cons" title="Daily Consumption" icon={<TrendingUp className="w-5 h-5" />} showExpand={false}>
+        <MetricDisplay
+          icon={<TrendingUp className="w-5 h-5 text-green-500" />}
+          value={consumption}
+          unit="m³"
+          color="text-green-500"
+          label="Daily Usage"
+        />
+      </CardShell>
+    </div>
+  );
 
-const ControlCards = (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-center">
-    <CardShell id="bp" title="BORING PUMP" icon={<Zap className="w-5 h-5" />}>
-      <ControlPanel 
-        title="Pump" 
-        running={bpRunning} 
-        auto={bpAuto} 
-        onStart={() => setBpRunning(true)} 
-        onStop={() => setBpRunning(false)} 
-        onToggleAuto={() => setBpAuto(v => !v)}
-        icon={<Zap className="w-4 h-4" />}
-      />
-    </CardShell>
+  const ControlCards = (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-center">
+      <CardShell id="bp" title="BORING PUMP" icon={<Zap className="w-5 h-5" />}>
+        <ControlPanel
+          title="Pump"
+          running={bpRunning}
+          auto={bpAuto}
+          onStart={() => setBpRunning(true)}
+          onStop={() => setBpRunning(false)}
+          onToggleAuto={() => setBpAuto(v => !v)}
+          icon={<Zap className="w-4 h-4" />}
+        />
+      </CardShell>
 
-    <CardShell id="ohp" title="OH PUMP" icon={<Zap className="w-5 h-5" />}>
-      <ControlPanel 
-        title="Pump" 
-        running={ohpRunning} 
-        auto={ohpAuto} 
-        onStart={() => setOhpRunning(true)} 
-        onStop={() => setOhpRunning(false)} 
-        onToggleAuto={() => setOhpAuto(v => !v)}
-        icon={<Zap className="w-4 h-4" />}
-      />
-    </CardShell>
+      <CardShell id="ohp" title="OH PUMP" icon={<Zap className="w-5 h-5" />}>
+        <ControlPanel
+          title="Pump"
+          running={ohpRunning}
+          auto={ohpAuto}
+          onStart={() => setOhpRunning(true)}
+          onStop={() => setOhpRunning(false)}
+          onToggleAuto={() => setOhpAuto(v => !v)}
+          icon={<Zap className="w-4 h-4" />}
+        />
+      </CardShell>
 
-    <CardShell id="valve" title="Valve OH" icon={<Gauge className="w-5 h-5" />}>
-      <div className="space-y-4 text-center">
-        <div className="flex items-center justify-center gap-2">
-          <Gauge className="w-4 h-4 text-blue-500" />
-          <span className="text-sm font-medium text-muted-foreground">Valve Status</span>
-          <StatusIndicator status={valveOpen} />
+      <CardShell id="valve" title="Valve OH" icon={<Gauge className="w-5 h-5" />}>
+        <div className="space-y-4 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <Gauge className="w-4 h-4 text-blue-500" />
+            <span className="text-sm font-medium text-muted-foreground">Valve Status</span>
+            <StatusIndicator status={valveOpen} />
+          </div>
+
+          <div className="flex justify-center">
+            <ModernToggle
+              checked={valveAuto}
+              onChange={() => setValveAuto(v => !v)}
+              labels={['Manual', 'Auto']}
+            />
+          </div>
+
+          <div className="flex items-center gap-3 justify-center">
+            <ActionButton
+              variant="close"
+              onClick={() => setValveOpen(false)}
+              icon={<XCircle className="w-4 h-4" />}
+            >
+              Close
+            </ActionButton>
+            <ActionButton
+              variant="open"
+              onClick={() => setValveOpen(true)}
+              icon={<CheckCircle className="w-4 h-4" />}
+            >
+              Open
+            </ActionButton>
+          </div>
         </div>
-        
-        <div className="flex justify-center">
-          <ModernToggle 
-            checked={valveAuto} 
-            onChange={() => setValveAuto(v => !v)} 
-            labels={['Manual', 'Auto']} 
-          />
-        </div>
-        
-        <div className="flex items-center gap-3 justify-center">
-          <ActionButton 
-            variant="close" 
-            onClick={() => setValveOpen(false)}
-            icon={<XCircle className="w-4 h-4" />}
-          >
-            Close
-          </ActionButton>
-          <ActionButton 
-            variant="open" 
-            onClick={() => setValveOpen(true)}
-            icon={<CheckCircle className="w-4 h-4" />}
-          >
-            Open
-          </ActionButton>
-        </div>
-      </div>
-    </CardShell>
+      </CardShell>
 
-    <CardShell id="power" title="Power Status" icon={<Power className="w-7 h-7" />}>
-      <PowerStatus /> {/* bigger icon indicator */}
-    </CardShell>
-  </div>
-);
+      <CardShell id="power" title="Power Status" icon={<Power className="w-7 h-7" />}>
+        <PowerStatus /> {/* bigger icon indicator */}
+      </CardShell>
+    </div>
+  );
 
 
   return (
@@ -1277,37 +1276,37 @@ const ControlCards = (
         </div>
       </div>
 
-    {/* Monitoring Cards */}
-{MonitoringCards}
+      {/* Monitoring Cards */}
+      {MonitoringCards}
 
-{/* Control Cards */}
-{ControlCards}
+      {/* Control Cards */}
+      {ControlCards}
 
-{/* Schedule Section */}
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <div className="lg:col-span-2">
-    <CardShell id="schedule" title="Schedule Management" icon={<Clock className="w-5 h-5" />}>
-      <ScheduleTable />
-    </CardShell>
-  </div>
-  <div className="lg:col-span-1">
-    {/* Additional space for future content */}
-  </div>
-</div>
+      {/* Schedule Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <CardShell id="schedule" title="Schedule Management" icon={<Clock className="w-5 h-5" />}>
+            <ScheduleTable />
+          </CardShell>
+        </div>
+        <div className="lg:col-span-1">
+          {/* Additional space for future content */}
+        </div>
+      </div>
 
       {/* Expanded Modal */}
       {expanded && (
         <div className="fixed inset-0 z-50 bg-black/70 p-4 flex items-center justify-center">
           <div className="w-full max-w-6xl">
             <div className="relative rounded-2xl bg-card border border-border shadow-2xl p-8">
-              <button 
-                aria-label="Close" 
-                onClick={() => setExpanded(null)} 
+              <button
+                aria-label="Close"
+                onClick={() => setExpanded(null)}
                 className="absolute top-6 right-6 p-2 rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <XCircle className="w-5 h-5 text-muted-foreground" />
               </button>
-              
+
               {expanded === 'ug' && (
                 <div className="text-center">
                   <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-3">
@@ -1317,7 +1316,7 @@ const ControlCards = (
                   <TankLevel percent={ugLevel} />
                 </div>
               )}
-              
+
               {expanded === 'oh' && (
                 <div className="text-center">
                   <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-3">
@@ -1327,90 +1326,90 @@ const ControlCards = (
                   <TankLevel percent={ohLevel} />
                 </div>
               )}
-              
+
               {expanded === 'flow' && (
                 <div className="text-center">
                   <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-3">
                     <Activity className="w-6 h-6 text-blue-500" />
                     Flow Meter
                   </h3>
-                  <MetricDisplay 
-                    icon={<Activity className="w-16 h-16 text-blue-500" />} 
-                    value={flow} 
-                    unit="m³/hr" 
+                  <MetricDisplay
+                    icon={<Activity className="w-16 h-16 text-blue-500" />}
+                    value={flow}
+                    unit="m³/hr"
                     label="Current Flow Rate"
                   />
                 </div>
               )}
-              
+
               {expanded === 'tds' && (
                 <div className="text-center">
                   <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-3">
                     <Gauge className="w-6 h-6 text-red-500" />
                     TDS Value
                   </h3>
-                  <MetricDisplay 
-                    icon={<Gauge className="w-16 h-16 text-red-500" />} 
-                    value={tds} 
-                    unit="mg/L" 
+                  <MetricDisplay
+                    icon={<Gauge className="w-16 h-16 text-red-500" />}
+                    value={tds}
+                    unit="mg/L"
                     color="text-red-500"
                     label="Total Dissolved Solids"
                   />
                 </div>
               )}
-              
+
               {expanded === 'cons' && (
                 <div className="text-center">
                   <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-3">
                     <TrendingUp className="w-6 h-6 text-green-500" />
                     Daily Consumption
                   </h3>
-                  <MetricDisplay 
-                    icon={<TrendingUp className="w-16 h-16 text-green-500" />} 
-                    value={consumption} 
-                    unit="m³" 
+                  <MetricDisplay
+                    icon={<TrendingUp className="w-16 h-16 text-green-500" />}
+                    value={consumption}
+                    unit="m³"
                     color="text-green-500"
                     label="Daily Water Usage"
                   />
                 </div>
               )}
-              
+
               {expanded === 'bp' && (
                 <div className="space-y-8">
                   <h3 className="text-2xl font-bold flex items-center gap-3">
                     <Zap className="w-6 h-6 text-blue-500" />
                     BORING PUMP Control
                   </h3>
-                  <ControlPanel 
-                    title="Pump" 
-                    running={bpRunning} 
-                    auto={bpAuto} 
-                    onStart={() => setBpRunning(true)} 
-                    onStop={() => setBpRunning(false)} 
+                  <ControlPanel
+                    title="Pump"
+                    running={bpRunning}
+                    auto={bpAuto}
+                    onStart={() => setBpRunning(true)}
+                    onStop={() => setBpRunning(false)}
                     onToggleAuto={() => setBpAuto(v => !v)}
                     icon={<Zap className="w-6 h-6" />}
                   />
                 </div>
               )}
-              
+
               {expanded === 'ohp' && (
                 <div className="space-y-8">
                   <h3 className="text-2xl font-bold flex items-center gap-3">
                     <Zap className="w-6 h-6 text-blue-500" />
                     OH PUMP Control
                   </h3>
-                  <ControlPanel 
-                    title="Pump" 
-                    running={ohpRunning} 
-                    auto={ohpAuto} 
-                    onStart={() => setOhpRunning(true)} 
-                    onStop={() => setOhpRunning(false)} 
+                  <ControlPanel
+                    title="Pump"
+                    running={ohpRunning}
+                    auto={ohpAuto}
+                    onStart={() => setOhpRunning(true)}
+                    onStop={() => setOhpRunning(false)}
                     onToggleAuto={() => setOhpAuto(v => !v)}
                     icon={<Zap className="w-6 h-6" />}
                   />
                 </div>
               )}
-              
+
               {expanded === 'valve' && (
                 <div className="space-y-8">
                   <h3 className="text-2xl font-bold flex items-center gap-3">
@@ -1425,23 +1424,23 @@ const ControlCards = (
                       </div>
                       <StatusIndicator status={valveOpen} />
                     </div>
-                    
-                    <ModernToggle 
-                      checked={valveAuto} 
-                      onChange={() => setValveAuto(v => !v)} 
-                      labels={['Manual', 'Auto']} 
+
+                    <ModernToggle
+                      checked={valveAuto}
+                      onChange={() => setValveAuto(v => !v)}
+                      labels={['Manual', 'Auto']}
                     />
-                    
+
                     <div className="flex items-center gap-4">
-                      <ActionButton 
-                        variant="close" 
+                      <ActionButton
+                        variant="close"
                         onClick={() => setValveOpen(false)}
                         icon={<XCircle className="w-5 h-5" />}
                       >
                         Close
                       </ActionButton>
-                      <ActionButton 
-                        variant="open" 
+                      <ActionButton
+                        variant="open"
                         onClick={() => setValveOpen(true)}
                         icon={<CheckCircle className="w-5 h-5" />}
                       >
@@ -1451,7 +1450,7 @@ const ControlCards = (
                   </div>
                 </div>
               )}
-              
+
               {expanded === 'power' && (
                 <div className="space-y-6">
                   <h3 className="text-2xl font-bold flex items-center gap-3">
@@ -1461,7 +1460,7 @@ const ControlCards = (
                   <PowerStatus />
                 </div>
               )}
-              
+
               {expanded === 'schedule' && (
                 <div className="space-y-6">
                   <h3 className="text-2xl font-bold flex items-center gap-3">
@@ -1515,6 +1514,20 @@ function DashboardContent() {
   const [highLevelSet, setHighLevelSet] = useState<string>("");
   const [levelToggleOn, setLevelToggleOn] = useState<boolean>(false);
 
+  // Handlers to save and clear inputs
+  const handleSaveLowLevel = () => {
+    // TODO: replace with actual save logic/API
+    console.log("Saving Low Level Set:", lowLevelSet);
+    setLowLevelSet("");
+  };
+
+  const handleSaveHighLevel = () => {
+    // TODO: replace with actual save logic/API
+    console.log("Saving High Level Set:", highLevelSet);
+    setHighLevelSet("");
+  };
+  const [expandedChart, setExpandedChart] = useState<"pie" | "bar" | null>(null);
+
   // Fields we care about
   const allowedMetrics = ["temperature", "pressure", "waterLevel"];
 
@@ -1563,11 +1576,11 @@ function DashboardContent() {
         prev.map((device) =>
           device.id === lastMessage.deviceId
             ? {
-                ...device,
-                ...filteredTelemetry,
-                status: "online",
-                lastSeen: "Just now"
-              }
+              ...device,
+              ...filteredTelemetry,
+              status: "online",
+              lastSeen: "Just now"
+            }
             : device
         )
       );
@@ -1597,9 +1610,8 @@ function DashboardContent() {
         onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          isSidebarCollapsed ? "ml-16" : "ml-64"
-        }`}
+        className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? "ml-16" : "ml-64"
+          }`}
       >
         <TopNavbar
           user={{ name: user.name, role: user.role, company: user.company }}
@@ -1638,60 +1650,159 @@ function DashboardContent() {
           {/* Level Set Controls */}
           <div className="mt-6 flex flex-col md:flex-row items-start justify-start gap-4 w-full">
             {/* Low Level Set */}
-            <div className="relative rounded-xl bg-card border border-border shadow-sm p-4 w-full max-w-[280px] min-h-[240px] flex flex-col">
+            <div className="relative rounded-xl bg-card border border-border shadow-sm p-4 w-full max-w-[280px] min-h-[180px] flex flex-col">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold text-foreground flex-1 text-center">Low Level Set</h3>
                 <div className="flex items-center gap-2">
-                  <button aria-label="Save" className="p-1.5 rounded-md hover:bg-muted/50"><Save className="w-4 h-4 text-muted-foreground"/></button>
-                  <button aria-label="Expand" className="p-1.5 rounded-md hover:bg-muted/50"><Maximize2 className="w-4 h-4 text-muted-foreground"/></button>
+                  <button aria-label="Save" className="p-1.5 rounded-md hover:bg-muted/50"><Save className="w-4 h-4 text-muted-foreground" /></button>
+                  <button aria-label="Expand" className="p-1.5 rounded-md hover:bg-muted/50"><Maximize2 className="w-4 h-4 text-muted-foreground" /></button>
                 </div>
               </div>
               <label className="block text-sm font-medium text-muted-foreground mb-2 text-center">Low Level Set:</label>
               <input
                 value={lowLevelSet}
-                onChange={(e)=>setLowLevelSet(e.target.value)}
+                onChange={(e) => setLowLevelSet(e.target.value)}
                 placeholder="Enter value"
                 className="w-full bg-background text-foreground rounded-md px-3 py-2 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors text-center placeholder:text-center"
               />
-              <button className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-semibold text-center">Save</button>
+              <button onClick={handleSaveLowLevel} className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-semibold text-center">Save</button>
             </div>
 
             {/* High Level Set */}
-            <div className="relative rounded-xl bg-card border border-border shadow-sm p-4 w-full max-w-[280px] min-h-[240px] flex flex-col">
+            <div className="relative rounded-xl bg-card border border-border shadow-sm p-4 w-full max-w-[280px] min-h-[180px] flex flex-col">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold text-foreground flex-1 text-center">High Level Set</h3>
                 <div className="flex items-center gap-2">
-                  <button aria-label="Save" className="p-1.5 rounded-md hover:bg-muted/50"><Save className="w-4 h-4 text-muted-foreground"/></button>
-                  <button aria-label="Expand" className="p-1.5 rounded-md hover:bg-muted/50"><Maximize2 className="w-4 h-4 text-muted-foreground"/></button>
+                  <button aria-label="Save" className="p-1.5 rounded-md hover:bg-muted/50"><Save className="w-4 h-4 text-muted-foreground" /></button>
+                  <button aria-label="Expand" className="p-1.5 rounded-md hover:bg-muted/50"><Maximize2 className="w-4 h-4 text-muted-foreground" /></button>
                 </div>
               </div>
               <label className="block text-sm font-medium text-muted-foreground mb-2 text-center">High Level Set:</label>
               <input
                 value={highLevelSet}
-                onChange={(e)=>setHighLevelSet(e.target.value)}
+                onChange={(e) => setHighLevelSet(e.target.value)}
                 placeholder="Enter value"
                 className="w-full bg-background text-foreground rounded-md px-3 py-2 text-sm border border-border focus:border-blue-500 focus:outline-none transition-colors text-center placeholder:text-center"
               />
-              <button className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-semibold text-center">Save</button>
+              <button onClick={handleSaveHighLevel} className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-semibold text-center">Save</button>
             </div>
 
             {/* Toggle Control */}
-            <div className="relative rounded-xl bg-card border border-border shadow-sm p-4 w-full max-w-[280px] min-h-[240px] flex flex-col items-center">
+            <div className="relative rounded-xl bg-card border border-border shadow-sm p-4 w-full max-w-[280px] min-h-[180px] flex flex-col items-center">
               <div className="flex items-center justify-between mb-3 w-full">
                 <h3 className="text-lg font-semibold text-foreground flex-1 text-center">Toggle Control</h3>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center gap-3 w-full">
-                <button
-                  onClick={() => setLevelToggleOn(v => !v)}
-                  className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors ${levelToggleOn ? 'bg-green-600' : 'bg-muted'}`}
-                >
-                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform ${levelToggleOn ? 'translate-x-7' : 'translate-x-1'}`} />
-                </button>
-                <span className="text-sm text-muted-foreground">{levelToggleOn ? 'ON' : 'OFF'}</span>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                  <button
+                    onClick={() => setLevelToggleOn(v => !v)}
+                    className={`relative inline-flex h-12 w-24 items-center rounded-full transition-all duration-200 ${levelToggleOn ? 'bg-green-600' : 'bg-muted'}`}
+                  >
+                    <span className={`inline-block h-10 w-10 transform rounded-full bg-white shadow transition-transform duration-200 ${levelToggleOn ? 'translate-x-12' : 'translate-x-1'}`} />
+                  </button>
+                  <span className="text-sm text-muted-foreground text-center">{levelToggleOn ? 'ON' : 'OFF'}</span>
+                </div>
               </div>
             </div>
           </div>
 
+
+          {/* Charts Row: Bar Graph (left) and Resource Distribution (right) */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-stretch">
+            {/* Bar Graph - left */}
+            <div className="relative min-h-[340px] h-full">
+              <button
+                aria-label="Expand Bar Graph"
+                onClick={() => setExpandedChart("bar")}
+                className="absolute top-2 right-2 z-10 p-1.5 rounded-md hover:bg-muted/50"
+              >
+                <Maximize2 className="w-4 h-4 text-muted-foreground" />
+              </button>
+              <BarGraphComponent
+                title="Yearly Totals"
+                data={[
+                  { name: "2009", total: 45 },
+                  { name: "2010", total: 52 },
+                  { name: "2011", total: 68 },
+                  { name: "2012", total: 80 },
+                  { name: "2013", total: 77 },
+                ]}
+                series={[{ key: "total", label: "Total", color: "#60a5fa" }]}
+                xKey="name"
+                xLabel="Years"
+                yLabel="Values"
+                height={300}
+                barSize={12}
+                className="h-full w-full max-w-none"
+              />
+            </div>
+
+            {/* Resource Distribution - right (unchanged size/padding) */}
+            <div className="relative min-h-[340px] h-full flex items-start">
+              <ResourcePieChart
+                title="Resource Distribution"
+                data={[
+                  { name: "Water", value: 42, color: "#0ea5e9" },
+                  { name: "Energy", value: 28, color: "#f97316" },
+                  { name: "Chemicals", value: 18, color: "#22c55e" },
+                  { name: "Maintenance", value: 12, color: "#8b5cf6" },
+                ]}
+                size={260}
+                className="h-full mx-0 w-full max-w-[300px]"
+              />
+            </div>
+          </div>
+
+          {/* Expanded modal view for charts */}
+          {expandedChart && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+              <div className="w-full max-w-6xl">
+                <div className="relative">
+                  <button
+                    aria-label="Close"
+                    onClick={() => setExpandedChart(null)}
+                    className="absolute top-2 right-2 z-10 p-2 rounded-md hover:bg-muted/50"
+                  >
+                    <svg className="w-4 h-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+
+                  {expandedChart === "pie" && (
+                    <ResourcePieChart
+                      title="Resource Distribution"
+                      data={[
+                        { name: "Water", value: 42, color: "#0ea5e9" },
+                        { name: "Energy", value: 28, color: "#f97316" },
+                        { name: "Chemicals", value: 18, color: "#22c55e" },
+                        { name: "Maintenance", value: 12, color: "#8b5cf6" },
+                      ]}
+                      size={420}
+                      className="mx-auto w-full max-w-none"
+                    />
+                  )}
+
+                  {expandedChart === "bar" && (
+                    <BarGraphComponent
+                      title="Yearly Totals"
+                      data={[
+                        { name: "2009", total: 45 },
+                        { name: "2010", total: 52 },
+                        { name: "2011", total: 68 },
+                        { name: "2012", total: 80 },
+                        { name: "2013", total: 77 },
+                      ]}
+                      series={[{ key: "total", label: "Total", color: "#60a5fa" }]}
+                      xKey="name"
+                      xLabel="Years"
+                      yLabel="Values"
+                      height={420}
+                      barSize={16}
+                      className="w-full max-w-none"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           <h2 className="text-xl font-semibold mb-4">Device Status</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -214,7 +214,7 @@ html {
 }
 
 .amset-sidebar {
-  @apply bg-sidebar text-sidebar-foreground min-h-screen w-64 fixed left-0 top-0 z-50;
+  @apply bg-sidebar text-sidebar-foreground min-h-screen fixed left-0 top-0 z-50;
 }
 
 .amset-nav-item {
