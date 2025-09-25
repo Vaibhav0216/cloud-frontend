@@ -8,6 +8,7 @@ import PumpControlCard from "./components/PumpControlCard";
 import TelemetryChart from "./components/TelemetryChart";
 import ResourcePieChart from "./components/ResourcePieChart";
 import BarGraphComponent from "./components/BarGraphComponent";
+import CustomMap from "./components/CustomMap";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useWebSocket } from "./contexts/WebSocketProvider";
 import { useAuth } from "./contexts/AuthContext";
@@ -1803,6 +1804,11 @@ function DashboardContent() {
               </div>
             </div>
           )}
+
+          {/* Location Map: left-aligned, below charts, above device status */}
+          <div className="mt-6 flex">
+            <CustomMap />
+          </div>
 
           <h2 className="text-xl font-semibold mb-4">Device Status</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
