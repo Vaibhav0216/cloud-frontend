@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 
-// react-leaflet parts are dynamically imported to avoid SSR issues
+// dynamic imports for react-leaflet
 const MapContainer = dynamic(
   async () => (await import("react-leaflet")).MapContainer,
   { ssr: false }
@@ -21,38 +21,42 @@ const Popup = dynamic(
   { ssr: false }
 );
 
-// Patch default Leaflet marker icons for Next.js using CDN icon URLs
-// Also lazy-load leaflet only on client to avoid "window is not defined"
-const configureLeafletIcons = async () => {
-  const L = await import("leaflet");
-  // @ts-ignore - patch private property
-  delete (L.Icon as any).Default.prototype._getIconUrl;
-  (L.Icon as any).Default.mergeOptions({
-    iconRetinaUrl:
-      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  });
-};
-
-// Mumbai
+// Mumbai center
 const MUMBAI_CENTER: [number, number] = [19.076, 72.8777];
 
 const CustomMap: React.FC = () => {
-  // Render only after client hydration + icon configuration
   const [ready, setReady] = useState(false);
+  const [customIcon, setCustomIcon] = useState<any>(null);
 
   useEffect(() => {
     let mounted = true;
-    configureLeafletIcons().finally(() => {
-      if (mounted) setReady(true);
-    });
+    (async () => {
+      const L = await import("leaflet");
+
+      // Create a custom icon
+      const icon = new L.Icon({
+        iconUrl:
+          "https://cdn-icons-png.flaticon.com/512/684/684908.png", // custom marker image
+        iconSize: [38, 38], // size of the icon
+        iconAnchor: [19, 38], // point of the icon which will correspond to marker's location
+        popupAnchor: [0, -38], // point from which the popup should open relative to the iconAnchor
+        shadowUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        shadowSize: [41, 41],
+        shadowAnchor: [12, 41],
+      });
+
+      if (mounted) {
+        setCustomIcon(icon);
+        setReady(true);
+      }
+    })();
+
     return () => {
       mounted = false;
     };
   }, []);
 
-  // OpenStreetMap tiles
   const tileUrl = useMemo(
     () => "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     []
@@ -63,7 +67,6 @@ const CustomMap: React.FC = () => {
     []
   );
 
-  // Loading skeleton before map is ready
   if (!ready) {
     return (
       <section className="w-full md:w-3/4 xl:w-[800px] mx-0 md:mr-auto h-[500px] rounded-xl border border-border bg-card shadow-sm animate-pulse flex items-center justify-center text-muted-foreground">
@@ -86,9 +89,11 @@ const CustomMap: React.FC = () => {
           className="w-full h-full"
         >
           <TileLayer url={tileUrl} attribution={attribution} />
-          <Marker position={MUMBAI_CENTER}>
-            <Popup>Mumbai City</Popup>
-          </Marker>
+          {customIcon && (
+            <Marker position={MUMBAI_CENTER} icon={customIcon}>
+              <Popup>Mumbai City</Popup>
+            </Marker>
+          )}
         </MapContainer>
       </div>
     </section>

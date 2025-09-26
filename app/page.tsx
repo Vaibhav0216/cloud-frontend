@@ -436,7 +436,7 @@ function EnergyMeterSection() {
 
       {/* Filter Tank Components - horizontal responsive row */}
       <div className="mb-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-6 ">
           {/* Filter Tank Level */}
           <div className="bg-white rounded-xl shadow-md hover:shadow-lg p-5 min-h-[180px] min-w-[160px] flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-200">
             <svg className="w-12 h-12 text-blue-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7c0-1.657 3.582-3 8-3s8 1.343 8 3v10c0 1.657-3.582 3-8 3s-8-1.343-8-3V7z" /><path d="M4 11c0 1.657 3.582 3 8 3s8-1.343 8-3" /></svg>
@@ -1155,7 +1155,7 @@ function WaterManagementSection() {
 
   // Modern Layout Sections 
   const MonitoringCards = (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
       <CardShell id="ug" title="Under Ground Tank" icon={<Droplets className="w-5 h-5" />} showExpand={false}>
         <TankLevel percent={ugLevel} />
       </CardShell>
@@ -1196,7 +1196,7 @@ function WaterManagementSection() {
   );
 
   const ControlCards = (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-center">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-center">
       <CardShell id="bp" title="BORING PUMP" icon={<Zap className="w-5 h-5" />}>
         <ControlPanel
           title="Pump"
@@ -1272,8 +1272,8 @@ function WaterManagementSection() {
           <p className="text-muted-foreground mt-1">Monitor and control water systems with real-time data</p>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span>Live Data</span>
+          {/* <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span>Live Data</span> */}
         </div>
       </div>
 
