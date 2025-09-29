@@ -8,6 +8,7 @@ import PumpControlCard from "./components/PumpControlCard";
 import TelemetryChart from "./components/TelemetryChart";
 import ResourcePieChart from "./components/ResourcePieChart";
 import BarGraphComponent from "./components/BarGraphComponent";
+import CombinedTelemetryChart from "./components/CombinedTelemetryChart";
 import CustomMap from "./components/CustomMap";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useWebSocket } from "./contexts/WebSocketProvider";
@@ -1604,6 +1605,20 @@ function DashboardContent() {
     telemetryData.some((point) => typeof point[metric] === "number")
   );
 
+  // Demo combined data for Flow Rate, Level, Total Flow
+  const combinedDemoData = [
+    { time: "08:00", flowRate: 45, level: 85, totalFlow: 1200 },
+    { time: "08:15", flowRate: 47, level: 87, totalFlow: 1250 },
+    { time: "08:30", flowRate: 49, level: 89, totalFlow: 1300 },
+    { time: "08:45", flowRate: 51, level: 90, totalFlow: 1350 },
+    { time: "09:00", flowRate: 48, level: 88, totalFlow: 1400 },
+    { time: "09:15", flowRate: 46, level: 86, totalFlow: 1450 },
+    { time: "09:30", flowRate: 45, level: 84, totalFlow: 1500 },
+    { time: "09:45", flowRate: 43, level: 82, totalFlow: 1550 },
+    { time: "10:00", flowRate: 41, level: 80, totalFlow: 1600 },
+    { time: "10:15", flowRate: 40, level: 78, totalFlow: 1650 },
+  ];
+
   return (
     <div className="flex h-screen bg-sidebar text-foreground">
       <Sidebar
@@ -1733,7 +1748,7 @@ function DashboardContent() {
                 xLabel="Years"
                 yLabel="Values"
                 height={300}
-                barSize={12}
+                barSize={30}
                 className="h-full w-full max-w-none"
               />
             </div>
@@ -1796,7 +1811,7 @@ function DashboardContent() {
                       xLabel="Years"
                       yLabel="Values"
                       height={420}
-                      barSize={16}
+                      barSize={50}
                       className="w-full max-w-none"
                     />
                   )}
@@ -1804,6 +1819,11 @@ function DashboardContent() {
               </div>
             </div>
           )}
+
+          {/* Combined Line Chart (Flow Rate, Level, Total Flow) */}
+          <div className="mt-6">
+            <CombinedTelemetryChart data={combinedDemoData} />
+          </div>
 
           {/* Location Map: left-aligned, below charts, above device status */}
           <div className="mt-6 flex">

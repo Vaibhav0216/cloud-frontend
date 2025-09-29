@@ -20,9 +20,15 @@ const Popup = dynamic(
   async () => (await import("react-leaflet")).Popup,
   { ssr: false }
 );
+const Tooltip = dynamic(
+  async () => (await import("react-leaflet")).Tooltip,
+  { ssr: false }
+);
 
-// Mumbai center
+
+// Locations
 const MUMBAI_CENTER: [number, number] = [19.076, 72.8777];
+const PUNE_CENTER: [number, number] = [18.5204, 73.8567];
 
 const CustomMap: React.FC = () => {
   const [ready, setReady] = useState(false);
@@ -37,9 +43,9 @@ const CustomMap: React.FC = () => {
       const icon = new L.Icon({
         iconUrl:
           "https://cdn-icons-png.flaticon.com/512/684/684908.png", // custom marker image
-        iconSize: [38, 38], // size of the icon
-        iconAnchor: [19, 38], // point of the icon which will correspond to marker's location
-        popupAnchor: [0, -38], // point from which the popup should open relative to the iconAnchor
+        iconSize: [38, 38],
+        iconAnchor: [19, 38],
+        popupAnchor: [0, -38],
         shadowUrl:
           "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
         shadowSize: [41, 41],
@@ -83,15 +89,42 @@ const CustomMap: React.FC = () => {
 
       <div className="w-full h-[500px] rounded-lg overflow-hidden">
         <MapContainer
-          center={MUMBAI_CENTER}
-          zoom={12}
+          center={[18.8, 73.4]} // Center between Mumbai & Pune
+          zoom={8}
           scrollWheelZoom={true}
           className="w-full h-full"
         >
           <TileLayer url={tileUrl} attribution={attribution} />
+
+          {/* Mumbai Marker */}
           {customIcon && (
             <Marker position={MUMBAI_CENTER} icon={customIcon}>
-              <Popup>Mumbai City</Popup>
+                <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent={false}>
+                Mumbai
+              </Tooltip>
+              <Popup>
+              <div className="text-sm">
+                  <strong>Mumbai City</strong>
+                  <br />
+                  Population: 20M+
+                </div>
+              </Popup>
+            </Marker>
+          )}
+
+          {/* Pune Marker */}
+          {customIcon && (
+            <Marker position={PUNE_CENTER} icon={customIcon}>
+               <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent={false}>
+                Pune
+              </Tooltip>
+              <Popup>
+              <div className="text-sm">
+                  <strong>Pune City</strong>
+                  <br />
+                  Level: <span className="font-bold text-red-500">50 meters</span>
+                </div>
+              </Popup>
             </Marker>
           )}
         </MapContainer>
