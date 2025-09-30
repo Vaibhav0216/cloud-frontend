@@ -8,6 +8,7 @@ import PumpControlCard from "./components/PumpControlCard";
 import TelemetryChart from "./components/TelemetryChart";
 import ResourcePieChart from "./components/ResourcePieChart";
 import BarGraphComponent from "./components/BarGraphComponent";
+import StackedPowerBar from "./components/StackedPowerBar";
 import CombinedTelemetryChart from "./components/CombinedTelemetryChart";
 import CustomMap from "./components/CustomMap";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -1747,8 +1748,8 @@ function DashboardContent() {
                 xKey="name"
                 xLabel="Years"
                 yLabel="Values"
-                height={300}
-                barSize={30}
+                height={260}
+                barSize={26}
                 className="h-full w-full max-w-none"
               />
             </div>
@@ -1763,10 +1764,15 @@ function DashboardContent() {
                   { name: "Chemicals", value: 18, color: "#22c55e" },
                   { name: "Maintenance", value: 12, color: "#8b5cf6" },
                 ]}
-                size={260}
+                size={220}
                 className="h-full mx-0 w-full max-w-[300px]"
               />
             </div>
+          </div>
+
+          {/* Stacked Power Bar - directly below the existing bar graph row */}
+          <div className="mt-4">
+            <StackedPowerBar height={340} />
           </div>
 
           {/* Expanded modal view for charts */}
@@ -1810,7 +1816,7 @@ function DashboardContent() {
                       xKey="name"
                       xLabel="Years"
                       yLabel="Values"
-                      height={420}
+                      height={450}
                       barSize={50}
                       className="w-full max-w-none"
                     />
