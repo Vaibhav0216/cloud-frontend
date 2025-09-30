@@ -1764,17 +1764,16 @@ function DashboardContent() {
                   { name: "Chemicals", value: 18, color: "#22c55e" },
                   { name: "Maintenance", value: 12, color: "#8b5cf6" },
                 ]}
-                size={220}
+                size={280}
                 className="h-full mx-0 w-full max-w-[300px]"
               />
             </div>
           </div>
 
-          {/* Stacked Power Bar - directly below the existing bar graph row */}
           <div className="mt-4">
             <StackedPowerBar height={340} />
           </div>
-
+  
           {/* Expanded modal view for charts */}
           {expandedChart && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
