@@ -78,10 +78,10 @@ const fetchLatestTelemetry = async () => {
 };
 
 const vaibhav = await fetchLatestTelemetry();
-const vrushali = vaibhav.data[0].telemetry;
+const telemetry = vaibhav.data[0].telemetry;
 
 // console.log("test ADD_LORA:", vaibhav.data[0].telemetry.ADD_LORA);
-console.log("Vrushali 123", vrushali.BATTERY_DINT_SLV, vrushali.BATTERY_REAL_SLV);
+console.log("telemetry 123", telemetry.BATTERY_DINT_SLV, telemetry.BATTERY_REAL_SLV);
 
 
 
@@ -150,26 +150,26 @@ type EnergyMeterData = {
 function EnergyMeterSection() {
   const [energyMeter1, setEnergyMeter1] = useState<EnergyMeterData>({
     lineVoltage: {
-      ry: vrushali.EM_P1_RY,
-      yb: vrushali.EM_P1_YB,
-      rb: vrushali.EM_P1_RB,
+      ry: telemetry.EM_P1_RY,
+      yb: telemetry.EM_P1_YB,
+      rb: telemetry.EM_P1_RB,
     },
     phaseVoltage: {
-      r: vrushali.EM_P1_RN,
-      y: vrushali.EM_P1_YN,
-      b: vrushali.EM_P1_BN,
+      r: telemetry.EM_P1_RN,
+      y: telemetry.EM_P1_YN,
+      b: telemetry.EM_P1_BN,
     },
     current: {
-      r: vrushali.EM_P1_R_I,
-      y: vrushali.EM_P1_Y_I,
-      b: vrushali.EM_P1_B_I,
+      r: telemetry.EM_P1_R_I,
+      y: telemetry.EM_P1_Y_I,
+      b: telemetry.EM_P1_B_I,
     },
-    frequency: vrushali.EM_P1_F,
-    watt: vrushali.EM_P1_WATT,
-    runningTime: vrushali.runningTime || 0,
-    pumpStatus: vrushali.Pump_1_ON ? "ON" : "OFF",
-    tripStatus: vrushali.Pump_1_TRIP ? "ON" : "OFF",
-    valveStatus: vrushali.VALVE_1_OPN_CLS ? "ON" : "OFF",
+    frequency: telemetry.EM_P1_F,
+    watt: telemetry.EM_P1_WATT,
+    runningTime: telemetry.runningTime || 0,
+    pumpStatus: telemetry.Pump_1_ON ? "ON" : "OFF",
+    tripStatus: telemetry.Pump_1_TRIP ? "ON" : "OFF",
+    valveStatus: telemetry.VALVE_1_OPN_CLS ? "ON" : "OFF",
     
   });
 
@@ -177,32 +177,32 @@ function EnergyMeterSection() {
   const [expanded, setExpanded] = useState<'1' | '2' | '3' | null>(null);
 
   // Helper function to generate EnergyMeterData dynamically
-const createEnergyMeterData = (pumpNumber: 2 | 3): EnergyMeterData => {
-  return {
-    lineVoltage: {
-      ry: vrushali[`EM_P${pumpNumber}_RY`],
-      yb: vrushali[`EM_P${pumpNumber}_YB`],
-      rb: vrushali[`EM_P${pumpNumber}_RB`],
-    },
-    phaseVoltage: {
-      r: vrushali[`EM_P${pumpNumber}_RN`],
-      y: vrushali[`EM_P${pumpNumber}_YN`],
-      b: vrushali[`EM_P${pumpNumber}_BN`],
-    },
-    current: {
-      r: vrushali[`EM_P${pumpNumber}_R_I`],
-      y: vrushali[`EM_P${pumpNumber}_Y_I`],
-      b: vrushali[`EM_P${pumpNumber}_B_I`],
-    },
-    frequency: vrushali[`EM_P${pumpNumber}_F`],
-    watt: vrushali[`EM_P${pumpNumber}_WATT`],
-    runningTime: vrushali.runningTime || 0,
-    pumpStatus: vrushali[`Pump_${pumpNumber}_ON`] ? "ON" : "OFF",
-    tripStatus: vrushali[`Pump_${pumpNumber}_TRIP`] ? "ON" : "OFF",
-    valveStatus: vrushali[`VALVE_${pumpNumber}_OPN_CLS`] ? "ON" : "OFF",
+  const createEnergyMeterData = (pumpNumber: 2 | 3): EnergyMeterData => {
+    return {
+      lineVoltage: {
+        ry: telemetry[`EM_P${pumpNumber}_RY`],
+        yb: telemetry[`EM_P${pumpNumber}_YB`],
+        rb: telemetry[`EM_P${pumpNumber}_RB`],
+      },
+      phaseVoltage: {
+        r: telemetry[`EM_P${pumpNumber}_RN`],
+        y: telemetry[`EM_P${pumpNumber}_YN`],
+        b: telemetry[`EM_P${pumpNumber}_BN`],
+      },
+      current: {
+        r: telemetry[`EM_P${pumpNumber}_R_I`],
+        y: telemetry[`EM_P${pumpNumber}_Y_I`],
+        b: telemetry[`EM_P${pumpNumber}_B_I`],
+      },
+      frequency: telemetry[`EM_P${pumpNumber}_F`],
+      watt: telemetry[`EM_P${pumpNumber}_WATT`],
+      runningTime: telemetry.runningTime || 0,
+      pumpStatus: telemetry[`Pump_${pumpNumber}_ON`] ? "ON" : "OFF",
+      tripStatus: telemetry[`Pump_${pumpNumber}_TRIP`] ? "ON" : "OFF",
+      valveStatus: telemetry[`VALVE_${pumpNumber}_OPN_CLS`] ? "ON" : "OFF",
+    };
   };
-};
-
+  
 // Usage
 const [energyMeter2, setEnergyMeter2] = useState<EnergyMeterData>(createEnergyMeterData(2));
 const [energyMeter3, setEnergyMeter3] = useState<EnergyMeterData>(createEnergyMeterData(3));
