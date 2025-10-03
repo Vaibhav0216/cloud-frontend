@@ -32,6 +32,7 @@ import {
   Save,
   Maximize2
 } from "lucide-react";
+import { log } from "console";
 
 // Device types
 
@@ -51,6 +52,38 @@ type Device = {
   waterLevel: number;
   alerts: DeviceAlert[];
 };
+// Add this fetch function inside DashboardContent
+const fetchLatestTelemetry = async () => {
+  try {
+    const token = localStorage.getItem("token"); // Assumes you stored token here
+    if (!token) throw new Error("No token found");
+    console.log("Fetching telemetry data with token:", token);
+    const res = await fetch("https://nrj1481m2k.execute-api.ap-south-1.amazonaws.com/device/latest", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` // Keep capital A
+      }
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch telemetry data");
+
+    const data = await res.json();
+    console.log("Fetched telemetry data:", data);
+    return data; // Assume this is an array of telemetry points
+  } catch (err) {
+    console.error("Error fetching telemetry:", err);
+    return null;
+  }
+};
+
+const vaibhav = await fetchLatestTelemetry();
+const vrushali = vaibhav.data[0].telemetry;
+
+// console.log("test ADD_LORA:", vaibhav.data[0].telemetry.ADD_LORA);
+console.log("Vrushali 123", vrushali.BATTERY_DINT_SLV, vrushali.BATTERY_REAL_SLV);
+
+
 
 const mockDevices: Device[] = [
   {
@@ -113,47 +146,115 @@ type EnergyMeterData = {
   valveStatus: 'ON' | 'OFF';
 
 };
-
 // Professional Energy Meter Section Component
 function EnergyMeterSection() {
   const [energyMeter1, setEnergyMeter1] = useState<EnergyMeterData>({
-    lineVoltage: { ry: 415, yb: 412, rb: 418 },
-    phaseVoltage: { r: 240, y: 238, b: 242 },
-    current: { r: 15.2, y: 14.8, b: 15.5 },
-    frequency: 50.2,
-    watt: 8.5,
-    runningTime: 45,
-    pumpStatus: 'OFF',
-    tripStatus: 'ON',
-    valveStatus: 'ON'
+    lineVoltage: {
+      ry: vrushali.EM_P1_RY,
+      yb: vrushali.EM_P1_YB,
+      rb: vrushali.EM_P1_RB,
+    },
+    phaseVoltage: {
+      r: vrushali.EM_P1_RN,
+      y: vrushali.EM_P1_YN,
+      b: vrushali.EM_P1_BN,
+    },
+    current: {
+      r: vrushali.EM_P1_R_I,
+      y: vrushali.EM_P1_Y_I,
+      b: vrushali.EM_P1_B_I,
+    },
+    frequency: vrushali.EM_P1_F,
+    watt: vrushali.EM_P1_WATT,
+    runningTime: vrushali.runningTime || 0,
+    pumpStatus: vrushali.Pump_1_ON ? "ON" : "OFF",
+    tripStatus: vrushali.Pump_1_TRIP ? "ON" : "OFF",
+    valveStatus: vrushali.VALVE_1_OPN_CLS ? "ON" : "OFF",
+    
   });
 
   // Expanded card state (modal-style)
   const [expanded, setExpanded] = useState<'1' | '2' | '3' | null>(null);
 
-  const [energyMeter2, setEnergyMeter2] = useState<EnergyMeterData>({
-    lineVoltage: { ry: 420, yb: 415, rb: 422 },
-    phaseVoltage: { r: 243, y: 240, b: 245 },
-    current: { r: 16.1, y: 15.7, b: 16.4 },
-    frequency: 49.8,
-    watt: 9.2,
-    runningTime: 38,
-    pumpStatus: 'OFF',
-    tripStatus: 'ON',
-    valveStatus: 'OFF'
-  });
+  // Helper function to generate EnergyMeterData dynamically
+const createEnergyMeterData = (pumpNumber: 2 | 3): EnergyMeterData => {
+  return {
+    lineVoltage: {
+      ry: vrushali[`EM_P${pumpNumber}_RY`],
+      yb: vrushali[`EM_P${pumpNumber}_YB`],
+      rb: vrushali[`EM_P${pumpNumber}_RB`],
+    },
+    phaseVoltage: {
+      r: vrushali[`EM_P${pumpNumber}_RN`],
+      y: vrushali[`EM_P${pumpNumber}_YN`],
+      b: vrushali[`EM_P${pumpNumber}_BN`],
+    },
+    current: {
+      r: vrushali[`EM_P${pumpNumber}_R_I`],
+      y: vrushali[`EM_P${pumpNumber}_Y_I`],
+      b: vrushali[`EM_P${pumpNumber}_B_I`],
+    },
+    frequency: vrushali[`EM_P${pumpNumber}_F`],
+    watt: vrushali[`EM_P${pumpNumber}_WATT`],
+    runningTime: vrushali.runningTime || 0,
+    pumpStatus: vrushali[`Pump_${pumpNumber}_ON`] ? "ON" : "OFF",
+    tripStatus: vrushali[`Pump_${pumpNumber}_TRIP`] ? "ON" : "OFF",
+    valveStatus: vrushali[`VALVE_${pumpNumber}_OPN_CLS`] ? "ON" : "OFF",
+  };
+};
 
-  const [energyMeter3, setEnergyMeter3] = useState<EnergyMeterData>({
-    lineVoltage: { ry: 415, yb: 412, rb: 418 },
-    phaseVoltage: { r: 240, y: 238, b: 242 },
-    current: { r: 15.2, y: 14.8, b: 15.5 },
-    frequency: 50.2,
-    watt: 8.5,
-    runningTime: 45,
-    pumpStatus: 'OFF',
-    tripStatus: 'ON',
-    valveStatus: 'ON'
-  });
+// Usage
+const [energyMeter2, setEnergyMeter2] = useState<EnergyMeterData>(createEnergyMeterData(2));
+const [energyMeter3, setEnergyMeter3] = useState<EnergyMeterData>(createEnergyMeterData(3));
+  // const [energyMeter2, setEnergyMeter2] = useState<EnergyMeterData>({
+  //   lineVoltage: {
+  //     ry: vrushali.EM_P2_RY,
+  //     yb: vrushali.EM_P2_YB,
+  //     rb: vrushali.EM_P2_RB,
+  //   },
+  //   phaseVoltage: {
+  //     r: vrushali.EM_P2_RN,
+  //     y: vrushali.EM_P2_YN,
+  //     b: vrushali.EM_P2_BN,
+  //   },
+  //   current: {
+  //     r: vrushali.EM_P2_R_I,
+  //     y: vrushali.EM_P2_Y_I,
+  //     b: vrushali.EM_P2_B_I,
+  //   },
+  //   frequency: vrushali.EM_P2_F,
+  //   watt: vrushali.EM_P2_WATT,
+  //   runningTime: vrushali.runningTime || 0,
+  //   pumpStatus: vrushali.Pump_2_ON ? "ON" : "OFF",
+  //   tripStatus: vrushali.Pump_2_TRIP ? "ON" : "OFF",
+  //   valveStatus: vrushali.VALVE_2_OPN_CLS ? "ON" : "OFF",
+    
+  // });
+
+  // const [energyMeter3, setEnergyMeter3] = useState<EnergyMeterData>({
+  //   lineVoltage: {
+  //     ry: vrushali.EM_P3_RY,
+  //     yb: vrushali.EM_P3_YB,
+  //     rb: vrushali.EM_P3_RB,
+  //   },
+  //   phaseVoltage: {
+  //     r: vrushali.EM_P3_RN,
+  //     y: vrushali.EM_P3_YN,
+  //     b: vrushali.EM_P3_BN,
+  //   },
+  //   current: {
+  //     r: vrushali.EM_P3_R_I,
+  //     y: vrushali.EM_P3_Y_I,
+  //     b: vrushali.EM_P3_B_I,
+  //   },
+  //   frequency: vrushali.EM_P3_F,
+  //   watt: vrushali.EM_P3_WATT,
+  //   runningTime: vrushali.runningTime || 0,
+  //   pumpStatus: vrushali.Pump_3_ON ? "ON" : "OFF",
+  //   tripStatus: vrushali.Pump_3_TRIP ? "ON" : "OFF",
+  //   valveStatus: vrushali.VALVE_3_OPN_CLS ? "ON" : "OFF",
+    
+  // });
 
   // Control Handlers
   const handlePumpControl = async (meterId: '1' | '2' | '3', action: 'start' | 'stop' | 'enable') => {
@@ -1481,30 +1582,7 @@ function WaterManagementSection() {
   );
 }
 
-// Add this fetch function inside DashboardContent
-const fetchLatestTelemetry = async () => {
-  try {
-    const token = localStorage.getItem("token"); // Assumes you stored token here
-    if (!token) throw new Error("No token found");
-    console.log("Fetching telemetry data with token:", token);
-    const res = await fetch("https://nrj1481m2k.execute-api.ap-south-1.amazonaws.com/device/latest", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}` // Keep capital A
-      }
-    });
 
-    if (!res.ok) throw new Error("Failed to fetch telemetry data");
-
-    const data = await res.json();
-    console.log("Fetched telemetry data:", data);
-    return data; // Assume this is an array of telemetry points
-  } catch (err) {
-    console.error("Error fetching telemetry:", err);
-    return null;
-  }
-};
 
 function DashboardContent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
