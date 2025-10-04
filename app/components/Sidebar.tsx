@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { User } from "lucide-react";
 import {
   LayoutDashboard,
@@ -45,7 +47,7 @@ const menuItems = [
 ];
 
 export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
-  const [activeItem, setActiveItem] = useState('Dashboard');
+  const pathname = usePathname() || '/';
   const [expandedDropdowns, setExpandedDropdowns] = useState<string[]>([]);
 
   const toggleDropdown = (label: string) => {
@@ -55,6 +57,16 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
         : [...prev, label]
     );
   };
+
+  // helpers
+  const isPathActive = (href?: string) => !!href && (pathname === href || pathname.startsWith(href + '/'));
+
+  // auto-open Reports when route is under /reports
+  useEffect(() => {
+    if (pathname.startsWith('/reports')) {
+      setExpandedDropdowns((prev) => (prev.includes('Reports') ? prev : [...prev, 'Reports']));
+    }
+  }, [pathname]);
 
   return (
     <div
@@ -94,7 +106,7 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
         )}
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeItem === item.label;
+          const isActive = item.hasDropdown ? pathname.startsWith('/reports') : isPathActive(item.href);
           const isDropdownExpanded = expandedDropdowns.includes(item.label);
 
           if (item.hasDropdown) {
@@ -102,10 +114,8 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
               <div key={item.label}>
                 <button
                   onClick={() => toggleDropdown(item.label)}
-                  className={`flex items-center justify-between w-full px-3 py-2 mb-2 rounded-xl transition-all relative group ${
-                    isActive
-                      ? 'bg-sidebar-accent/20 text-sidebar-accent-foreground font-semibold shadow-md'
-                      : 'hover:bg-sidebar-primary/10 hover:text-sidebar-primary text-muted-foreground'
+                  className={`flex items-center justify-between w-full px-3 py-2 mb-2 rounded-xl transition-colors relative group ${
+                    isActive ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-indigo-500 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center">
@@ -131,22 +141,19 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                   <div className="ml-6 mb-2 space-y-1">
                     {item.dropdownItems?.map((dropdownItem) => {
                       const DropdownIcon = dropdownItem.icon;
-                      const isDropdownActive = activeItem === dropdownItem.label;
+                      const isDropdownActive = isPathActive(dropdownItem.href);
                       
                       return (
-                        <a
+                        <Link
                           key={dropdownItem.label}
                           href={dropdownItem.href}
-                          onClick={() => setActiveItem(dropdownItem.label)}
-                          className={`flex items-center px-3 py-2 rounded-lg transition-all relative group ${
-                            isDropdownActive
-                              ? 'bg-sidebar-accent/20 text-sidebar-accent-foreground font-semibold'
-                              : 'hover:bg-sidebar-primary/10 hover:text-sidebar-primary text-muted-foreground'
+                          className={`flex items-center px-3 py-2 rounded-lg transition-colors relative group ${
+                            isDropdownActive ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-indigo-500 hover:text-white'
                           }`}
                         >
                           <DropdownIcon className="w-4 h-4" />
                           <span className="ml-3 text-sm">{dropdownItem.label}</span>
-                        </a>
+                        </Link>
                       );
                     })}
                   </div>
@@ -156,14 +163,11 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
           }
 
           return (
-            <a
+            <Link
               key={item.label}
               href={item.href}
-              onClick={() => setActiveItem(item.label)}
-              className={`flex items-center px-3 py-2 mb-2 rounded-xl transition-all relative group ${
-                isActive
-                  ? 'bg-sidebar-accent/20 text-sidebar-accent-foreground font-semibold shadow-md'
-                  : 'hover:bg-sidebar-primary/10 hover:text-sidebar-primary text-muted-foreground'
+              className={`flex items-center px-3 py-2 mb-2 rounded-xl transition-colors relative group ${
+                isActive ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-indigo-500 hover:text-white'
               }`}
             >
               <div className="relative">
@@ -177,7 +181,7 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                 />
               </div>
               {!isCollapsed && <span className="ml-3">{item.label}</span>}
-            </a>
+            </Link>
           );
         })}
       </nav>
