@@ -78,7 +78,7 @@ const fetchLatestTelemetry = async () => {
 };
 
 const vaibhav = await fetchLatestTelemetry();
-const telemetry = vaibhav.data[0].telemetry;
+const telemetry = vaibhav?.data?.[0]?.telemetry;
 
 const mockDevices: Device[] = [
   {
