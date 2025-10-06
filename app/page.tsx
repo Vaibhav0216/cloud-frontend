@@ -581,8 +581,8 @@ function EnergyMeterSection() {
           {/* Auto Manual */}
           <div className="bg-white rounded-xl shadow-md hover:shadow-lg p-5 min-h-[180px] min-w-[160px] flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-200">
             <svg className="w-12 h-12 text-green-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3 7h7l-5.5 4 2.5 7-7-4-7 4 2.5-7L2 9h7z" /></svg>
-            <p className="text-sm text-gray-600 font-medium">{telemetry.AUTO_MANUAL}</p>
-            <div className="text-2xl font-bold text-green-600">Auto</div>
+            <p className="text-sm text-gray-600 font-medium">{telemetry?.AUTO_MANUAL ? "Auto" : "Manual"}</p>
+            <div className="text-2xl font-bold text-green-600">{telemetry?.AUTO_MANUAL ? "Auto" : "Manual"}</div>
           </div>
         </div>
       </div>
