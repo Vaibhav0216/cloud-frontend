@@ -42,6 +42,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // Validate JWT tokens that contain an `exp` claim; treat opaque tokens as valid (server will enforce)
+  const isTokenValid = (token: string): boolean => {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return true; // likely a non-JWT session token
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (payload && typeof payload.exp === 'number') {
+        const now = Math.floor(Date.now() / 1000);
+        return payload.exp > now;
+      }
+      return true;
+    } catch {
+      return true;
+    }
+  };
+
   // Check authentication status on mount
   useEffect(() => {
     const checkAuth = () => {
@@ -51,10 +67,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const authStatus = localStorage.getItem('isAuthenticated');
 
         if (token && userData && authStatus === 'true') {
-          const parsedUser = JSON.parse(userData);
-          setUser(parsedUser);
-          setIsAuthenticated(true);
-          console.log('Auth check: User authenticated from localStorage');
+          // Clear if token is expired
+          if (!isTokenValid(token)) {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            localStorage.removeItem('isAuthenticated');
+            setUser(null);
+            setIsAuthenticated(false);
+            console.log('Auth check: Token expired, clearing session');
+          } else {
+            const parsedUser = JSON.parse(userData);
+            setUser(parsedUser);
+            setIsAuthenticated(true);
+            console.log('Auth check: User authenticated from localStorage');
+          }
         } else {
           setUser(null);
           setIsAuthenticated(false);

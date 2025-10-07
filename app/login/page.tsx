@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Cpu, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Cpu, AlertCircle, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
@@ -134,9 +135,9 @@ export default function LoginPage() {
                   Remember me
                 </label>
               </div>
-              <a href="#" className="text-sm text-blue-600 hover:text-blue-500">
-                Forgot password?
-              </a>
+              <Link href="/resetPassword" className="text-sm text-blue-600 hover:text-blue-500">
+              Forgot Password?
+              </Link>
             </div>
 
             <button
@@ -153,6 +154,11 @@ export default function LoginPage() {
                 'Sign In'
               )}
             </button>
+            <div className="mt-4 text-center">
+              <Link href="/register" className="inline-flex items-center justify-center w-full px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                Create an account <ArrowRight size={16} className="ml-1" />
+              </Link>
+            </div>
           </form>
         </div>
 

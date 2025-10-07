@@ -15,6 +15,9 @@ import {
 import { Monitor, Wifi, XCircle } from 'lucide-react'; // 🔹 Added XCircle
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
+import ProtectedRoute from '../components/ProtectedRoute';
+import { useAuth } from '../contexts/AuthContext';
+import { useWebSocket } from '../contexts/WebSocketProvider';
 
 type DeviceStatus = 'Online' | 'Offline';
 
@@ -26,19 +29,11 @@ interface DeviceRow {
   lastActive: string;
 }
 
-export default function DevicesPage() {
+function DevicesContent() {
   // Sidebar collapse state
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-  // Dummy user (replace with actual logged-in user data from context or API)
-  const user = {
-    name: 'Admin User',
-    role: 'Admin',
-    company: 'SmartFarm Inc.',
-  };
-
-  // Example connection state (replace with actual socket or API connection state)
-  const [isConnected] = useState(true);
+  const { user } = useAuth();
+  const { isConnected } = useWebSocket();
 
   const devices: DeviceRow[] = [
     { id: 1, name: 'Main Water Pump', location: 'Sector A', status: 'Online', lastActive: 'Just now' },
@@ -62,7 +57,12 @@ export default function DevicesPage() {
         }`}
       >
         {/* Top Navbar */}
-        <TopNavbar user={user} isConnected={isConnected} />
+        {user && (
+          <TopNavbar
+            user={{ name: user.name, role: user.role, company: user.company }}
+            isConnected={isConnected}
+          />
+        )}
 
         {/* Page Content */}
         <main className="flex-1 p-6 space-y-6 overflow-y-auto">
@@ -128,3 +128,12 @@ export default function DevicesPage() {
     </div>
   );
 }
+
+export default function DevicesPage() {
+  return (
+    <ProtectedRoute>
+      <DevicesContent />
+    </ProtectedRoute>
+  );
+}
+

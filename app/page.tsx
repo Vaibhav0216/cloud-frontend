@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { log } from "console";
 
+
 // Device types
 
 type DeviceAlert = {
@@ -53,9 +54,11 @@ type Device = {
   alerts: DeviceAlert[];
 };
 // Add this fetch function inside DashboardContent
+
 const fetchLatestTelemetry = async () => {
   try {
     const token = localStorage.getItem("token"); // Assumes you stored token here
+    console.log("Token:", token);
     if (!token) throw new Error("No token found");
     console.log("Fetching telemetry data with token:", token);
     const res = await fetch("https://nrj1481m2k.execute-api.ap-south-1.amazonaws.com/device/latest", {
@@ -77,8 +80,6 @@ const fetchLatestTelemetry = async () => {
   }
 };
 
-const vaibhav = await fetchLatestTelemetry();
-const telemetry = vaibhav?.data?.[0]?.telemetry;
 
 const mockDevices: Device[] = [
   {
@@ -142,7 +143,8 @@ type EnergyMeterData = {
 
 };
 // Professional Energy Meter Section Component
-function EnergyMeterSection() {
+function EnergyMeterSection({ telemetry }: { telemetry: any }) {
+
   const [energyMeter1, setEnergyMeter1] = useState<EnergyMeterData>({
     lineVoltage: {
       ry: telemetry.EM_P1_RY,
@@ -159,12 +161,12 @@ function EnergyMeterSection() {
       y: telemetry.EM_P1_Y_I,
       b: telemetry.EM_P1_B_I,
     },
-    frequency: telemetry.EM_P1_F,
-    watt: telemetry.EM_P1_WATT,
-    runningTime: telemetry.runningTime || 0,
-    pumpStatus: telemetry.Pump_1_ON ? "ON" : "OFF",
-    tripStatus: telemetry.Pump_1_TRIP ? "ON" : "OFF",
-    valveStatus: telemetry.VALVE_1_OPN_CLS ? "ON" : "OFF",
+    frequency: telemetry?.EM_P1_F,
+    watt: telemetry?.EM_P1_WATT,
+    runningTime: telemetry?.runningTime || 0,
+    pumpStatus: telemetry?.Pump_1_ON ? "ON" : "OFF",
+    tripStatus: telemetry?.Pump_1_TRIP ? "ON" : "OFF",
+    valveStatus: telemetry?.VALVE_1_OPN_CLS ? "ON" : "OFF",
 
   });
 
@@ -201,56 +203,7 @@ function EnergyMeterSection() {
   // Usage
   const [energyMeter2, setEnergyMeter2] = useState<EnergyMeterData>(createEnergyMeterData(2));
   const [energyMeter3, setEnergyMeter3] = useState<EnergyMeterData>(createEnergyMeterData(3));
-  // const [energyMeter2, setEnergyMeter2] = useState<EnergyMeterData>({
-  //   lineVoltage: {
-  //     ry: vrushali.EM_P2_RY,
-  //     yb: vrushali.EM_P2_YB,
-  //     rb: vrushali.EM_P2_RB,
-  //   },
-  //   phaseVoltage: {
-  //     r: vrushali.EM_P2_RN,
-  //     y: vrushali.EM_P2_YN,
-  //     b: vrushali.EM_P2_BN,
-  //   },
-  //   current: {
-  //     r: vrushali.EM_P2_R_I,
-  //     y: vrushali.EM_P2_Y_I,
-  //     b: vrushali.EM_P2_B_I,
-  //   },
-  //   frequency: vrushali.EM_P2_F,
-  //   watt: vrushali.EM_P2_WATT,
-  //   runningTime: vrushali.runningTime || 0,
-  //   pumpStatus: vrushali.Pump_2_ON ? "ON" : "OFF",
-  //   tripStatus: vrushali.Pump_2_TRIP ? "ON" : "OFF",
-  //   valveStatus: vrushali.VALVE_2_OPN_CLS ? "ON" : "OFF",
-
-  // });
-
-  // const [energyMeter3, setEnergyMeter3] = useState<EnergyMeterData>({
-  //   lineVoltage: {
-  //     ry: vrushali.EM_P3_RY,
-  //     yb: vrushali.EM_P3_YB,
-  //     rb: vrushali.EM_P3_RB,
-  //   },
-  //   phaseVoltage: {
-  //     r: vrushali.EM_P3_RN,
-  //     y: vrushali.EM_P3_YN,
-  //     b: vrushali.EM_P3_BN,
-  //   },
-  //   current: {
-  //     r: vrushali.EM_P3_R_I,
-  //     y: vrushali.EM_P3_Y_I,
-  //     b: vrushali.EM_P3_B_I,
-  //   },
-  //   frequency: vrushali.EM_P3_F,
-  //   watt: vrushali.EM_P3_WATT,
-  //   runningTime: vrushali.runningTime || 0,
-  //   pumpStatus: vrushali.Pump_3_ON ? "ON" : "OFF",
-  //   tripStatus: vrushali.Pump_3_TRIP ? "ON" : "OFF",
-  //   valveStatus: vrushali.VALVE_3_OPN_CLS ? "ON" : "OFF",
-
-  // });
-
+  
   // Control Handlers
   const handlePumpControl = async (meterId: '1' | '2' | '3', action: 'start' | 'stop' | 'enable') => {
     try {
@@ -1610,26 +1563,17 @@ function DashboardContent() {
 
   useEffect(() => {
     const loadData = async () => {
+      console.log("Loading data...");
       const res = await fetchLatestTelemetry();
       if (res?.data?.length) {
-        const formatted = res.data.map((entry: any) => {
-          // Only keep allowed metrics
-          const filteredTelemetry = Object.fromEntries(
-            Object.entries(entry.telemetry).filter(([key]) =>
-              allowedMetrics.includes(key)
-            )
-          );
-          return {
-            deviceId: entry.deviceId,
-            timestamp: new Date().toISOString(),
-            ...filteredTelemetry
-          };
-        });
+        const formatted = res.data[0].telemetry;
         setTelemetryData(formatted);
       }
     };
     loadData();
-  }, []);
+  }, [telemetryData]);
+
+  console.log("Telemetry data:", telemetryData);
 
   // Handle WebSocket messages
   useEffect(() => {
@@ -1647,7 +1591,7 @@ function DashboardContent() {
         ...filteredTelemetry
       };
 
-      setTelemetryData((prev) => [...prev.slice(-49), newPoint]);
+      // setTelemetryData((prev) => [...prev.slice(-49), newPoint]);
 
       setDevices((prev) =>
         prev.map((device) =>
@@ -1676,9 +1620,9 @@ function DashboardContent() {
   if (!user) return null;
 
   // Determine which allowed metrics are present in current data
-  const metricKeys = allowedMetrics.filter((metric) =>
-    telemetryData.some((point) => typeof point[metric] === "number")
-  );
+  // const metricKeys = allowedMetrics.filter((metric) =>
+  //   telemetryData.some((point) => typeof point[metric] === "number")
+  // );
 
   // Demo combined data for Flow Rate, Level, Total Flow
   const combinedDemoData = [
@@ -1733,7 +1677,7 @@ function DashboardContent() {
           </div> */}
 
           {/* Professional Energy Meter Section */}
-          <EnergyMeterSection />
+          <EnergyMeterSection telemetry={telemetryData} />
 
           {/* Operations Grid Section (between Energy Meter 3 and Device Status) */}
           <WaterManagementSection />
