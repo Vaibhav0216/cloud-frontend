@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect ,useMemo } from "react";
 import Sidebar from "./components/Sidebar";
 import TopNavbar from "./components/TopNavbar";
 import PumpControlCard from "./components/PumpControlCard";
-import TelemetryChart from "./components/TelemetryChart";
+import EnergyMeterCard from "./components/EnergyMeterCard";
 import ResourcePieChart from "./components/ResourcePieChart";
 import BarGraphComponent from "./components/BarGraphComponent";
 import StackedPowerBar from "./components/StackedPowerBar";
@@ -53,14 +53,12 @@ type Device = {
   waterLevel: number;
   alerts: DeviceAlert[];
 };
-// Add this fetch function inside DashboardContent
 
+// Helper function to fetch data form the dynamoDB
 const fetchLatestTelemetry = async () => {
   try {
     const token = localStorage.getItem("token"); // Assumes you stored token here
-    console.log("Token:", token);
     if (!token) throw new Error("No token found");
-    console.log("Fetching telemetry data with token:", token);
     const res = await fetch("https://nrj1481m2k.execute-api.ap-south-1.amazonaws.com/device/latest", {
       method: "GET",
       headers: {
@@ -72,7 +70,6 @@ const fetchLatestTelemetry = async () => {
     if (!res.ok) throw new Error("Failed to fetch telemetry data");
 
     const data = await res.json();
-    console.log("Fetched telemetry data:", data);
     return data; // Assume this is an array of telemetry points
   } catch (err) {
     console.error("Error fetching telemetry:", err);
@@ -80,6 +77,33 @@ const fetchLatestTelemetry = async () => {
   }
 };
 
+// Helper function to generate EnergyMeterData dynamically
+const createEnergyMeterData = (pumpNumber: 1 | 2 | 3 , telemetry : any): EnergyMeterData => {
+  console.log("Create EM:",telemetry);
+  return {
+    lineVoltage: {
+      ry: telemetry[`EM_P${pumpNumber}_RY`],
+      yb: telemetry[`EM_P${pumpNumber}_YB`],
+      rb: telemetry[`EM_P${pumpNumber}_RB`],
+    },
+    phaseVoltage: {
+      r: telemetry[`EM_P${pumpNumber}_RN`],
+      y: telemetry[`EM_P${pumpNumber}_YN`],
+      b: telemetry[`EM_P${pumpNumber}_BN`],
+    },
+    current: {
+      r: telemetry[`EM_P${pumpNumber}_R_I`],
+      y: telemetry[`EM_P${pumpNumber}_Y_I`],
+      b: telemetry[`EM_P${pumpNumber}_B_I`],
+    },
+    frequency: telemetry[`EM_P${pumpNumber}_F`],
+    watt: telemetry[`EM_P${pumpNumber}_WATT`],
+    runningTime: telemetry.runningTime || 0,
+    pumpStatus: telemetry[`Pump_${pumpNumber}_ON`] ? "ON" : "OFF",
+    tripStatus: telemetry[`Pump_${pumpNumber}_TRIP`] ? "ON" : "OFF",
+    valveStatus: telemetry[`VALVE_${pumpNumber}_OPN_CLS`] ? "ON" : "OFF",
+  };
+};
 
 const mockDevices: Device[] = [
   {
@@ -126,7 +150,7 @@ type EnergyMeterData = {
   };
   phaseVoltage: {
     r: number;
-    y: number;
+    y: number;  
     b: number;
   };
   current: {
@@ -142,86 +166,38 @@ type EnergyMeterData = {
   valveStatus: 'ON' | 'OFF';
 
 };
+
 // Professional Energy Meter Section Component
 function EnergyMeterSection({ telemetry }: { telemetry: any }) {
-
-  const [energyMeter1, setEnergyMeter1] = useState<EnergyMeterData>({
-    lineVoltage: {
-      ry: telemetry.EM_P1_RY,
-      yb: telemetry.EM_P1_YB,
-      rb: telemetry.EM_P1_RB,
-    },
-    phaseVoltage: {
-      r: telemetry.EM_P1_RN,
-      y: telemetry.EM_P1_YN,
-      b: telemetry.EM_P1_BN,
-    },
-    current: {
-      r: telemetry.EM_P1_R_I,
-      y: telemetry.EM_P1_Y_I,
-      b: telemetry.EM_P1_B_I,
-    },
-    frequency: telemetry?.EM_P1_F,
-    watt: telemetry?.EM_P1_WATT,
-    runningTime: telemetry?.runningTime || 0,
-    pumpStatus: telemetry?.Pump_1_ON ? "ON" : "OFF",
-    tripStatus: telemetry?.Pump_1_TRIP ? "ON" : "OFF",
-    valveStatus: telemetry?.VALVE_1_OPN_CLS ? "ON" : "OFF",
-
-  });
-
   // Expanded card state (modal-style)
-  const [expanded, setExpanded] = useState<'1' | '2' | '3' | null>(null);
+  // const [expanded, setExpanded] = useState<'1' | '2' | '3' | null>(null);
 
-  // Helper function to generate EnergyMeterData dynamically
-  const createEnergyMeterData = (pumpNumber: 2 | 3): EnergyMeterData => {
-    return {
-      lineVoltage: {
-        ry: telemetry[`EM_P${pumpNumber}_RY`],
-        yb: telemetry[`EM_P${pumpNumber}_YB`],
-        rb: telemetry[`EM_P${pumpNumber}_RB`],
-      },
-      phaseVoltage: {
-        r: telemetry[`EM_P${pumpNumber}_RN`],
-        y: telemetry[`EM_P${pumpNumber}_YN`],
-        b: telemetry[`EM_P${pumpNumber}_BN`],
-      },
-      current: {
-        r: telemetry[`EM_P${pumpNumber}_R_I`],
-        y: telemetry[`EM_P${pumpNumber}_Y_I`],
-        b: telemetry[`EM_P${pumpNumber}_B_I`],
-      },
-      frequency: telemetry[`EM_P${pumpNumber}_F`],
-      watt: telemetry[`EM_P${pumpNumber}_WATT`],
-      runningTime: telemetry.runningTime || 0,
-      pumpStatus: telemetry[`Pump_${pumpNumber}_ON`] ? "ON" : "OFF",
-      tripStatus: telemetry[`Pump_${pumpNumber}_TRIP`] ? "ON" : "OFF",
-      valveStatus: telemetry[`VALVE_${pumpNumber}_OPN_CLS`] ? "ON" : "OFF",
-    };
-  };
+  const [energyMeter1, setEnergyMeter1] = useState<EnergyMeterData>(() => createEnergyMeterData(1, telemetry));
+  const [energyMeter2, setEnergyMeter2] = useState<EnergyMeterData>(() => createEnergyMeterData(2, telemetry));
+  const [energyMeter3, setEnergyMeter3] = useState<EnergyMeterData>(() => createEnergyMeterData(3, telemetry));
 
-  // Usage
-  const [energyMeter2, setEnergyMeter2] = useState<EnergyMeterData>(createEnergyMeterData(2));
-  const [energyMeter3, setEnergyMeter3] = useState<EnergyMeterData>(createEnergyMeterData(3));
-  
+  useEffect(() => {
+    setEnergyMeter1(createEnergyMeterData(1, telemetry));
+    setEnergyMeter2(createEnergyMeterData(2, telemetry));
+    setEnergyMeter3(createEnergyMeterData(3, telemetry));
+  }, [telemetry]);
+
   // Control Handlers
   const handlePumpControl = async (meterId: '1' | '2' | '3', action: 'start' | 'stop' | 'enable') => {
     try {
-      // console.log(` ${action.toUpperCase()} button clicked for Meter ${meterId}, Action: ${action}`);
-      // const token = localStorage.getItem("token");
-      // if (!token) throw new Error("No token found");
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
 
-      // const response = await fetch(`/api/energy-meter-${meterId}/control`, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "Authorization": `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify({ action })
-      // });
+      const response = await fetch(`/api/energy-meter-${meterId}/control`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ action })
+      });
 
-      // if (!response.ok) throw new Error(`Failed to ${action} pump`);
-      // console.log(`Pump ${meterId} ${action} request sent successfully`);
+      if (!response.ok) throw new Error(`Failed to ${action} pump`);
       // Update local state with optimistic updates
       if (meterId === '1') {
 
@@ -301,179 +277,13 @@ function EnergyMeterSection({ telemetry }: { telemetry: any }) {
         setEnergyMeter1(prev => ({ ...prev, valveStatus: newStatus }));
       } else if (meterId === '2') {
         setEnergyMeter2(prev => ({ ...prev, valveStatus: newStatus }));
-      } else {
+      } else if(meterId === '3') {
         setEnergyMeter3(prev => ({ ...prev, valveStatus: newStatus }));
       }
     } catch (err) {
       console.error(`Error toggling valve ${meterId}:`, err);
     }
   };
-
-  // Professional Energy Meter Card Component
-  const EnergyMeterCard = ({
-    title,
-    data,
-    meterId,
-    onExpand,
-    showClose
-  }: {
-    title: string;
-    data: EnergyMeterData;
-    meterId: '1' | '2' | '3';
-    onExpand?: (id: '1' | '2' | '3') => void;
-    showClose?: boolean;
-  }) => (
-    <div className="amset-card p-6 rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-all duration-300 relative">
-      {/* Pop-up Icon */}
-      {!showClose ? (
-        <button onClick={() => onExpand?.(meterId)} className="absolute top-4 right-4 p-2 hover:bg-muted/50 rounded-lg transition-colors">
-          <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-          </svg>
-        </button>
-      ) : (
-        <button onClick={() => setExpanded(null)} className="absolute top-4 right-4 p-2 hover:bg-muted/50 rounded-lg transition-colors" aria-label="Close">
-          <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      )}
-
-      {/* Card Header */}
-      <div className="mb-6">
-        <h3 className="text-xl font-bold text-foreground">{title}</h3>
-      </div>
-
-      {/* Data Grid - Responsive Layout */}
-      <div className="space-y-4">
-        {/* Line Voltage Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="text-muted-foreground font-medium">Line Voltage</div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Red-Yellow Phase Voltage</div>
-            <div className="text-lg font-bold text-foreground">{data.lineVoltage.ry}V</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Yellow-Blue Phase Voltage</div>
-            <div className="text-lg font-bold text-foreground">{data.lineVoltage.yb}V</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Red-Blue Phase Voltage</div>
-            <div className="text-lg font-bold text-foreground">{data.lineVoltage.rb}V</div>
-          </div>
-        </div>
-
-        {/* Phase Voltage Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="text-muted-foreground font-medium">Phase Voltage</div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Red Phase Voltage</div>
-            <div className="text-lg font-bold text-foreground">{data.phaseVoltage.r}V</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Yellow Phase Voltage</div>
-            <div className="text-lg font-bold text-foreground">{data.phaseVoltage.y}V</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Blue Phase Voltage</div>
-            <div className="text-lg font-bold text-foreground">{data.phaseVoltage.b}V</div>
-          </div>
-        </div>
-
-        {/* Current Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="text-muted-foreground font-medium">Current</div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Red Phase Current</div>
-            <div className="text-lg font-bold text-foreground">{data.current.r}A</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Yellow Phase Current</div>
-            <div className="text-lg font-bold text-foreground">{data.current.y}A</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Blue Phase Current</div>
-            <div className="text-lg font-bold text-foreground">{data.current.b}A</div>
-          </div>
-        </div>
-
-        {/* Additional Metrics Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="text-muted-foreground font-medium">Frequency</div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Power in Watts</div>
-            <div className="text-lg font-bold text-foreground">{data.watt} kW</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Running Time/min</div>
-            <div className="text-lg font-bold text-foreground">{data.runningTime} min</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-muted-foreground mb-1">Frequency</div>
-            <div className="text-lg font-bold text-foreground">{data.frequency} Hz</div>
-          </div>
-        </div>
-
-        {/* Control Buttons Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="text-muted-foreground font-medium">Controls</div>
-
-          {/* Start Button */}
-          <button
-            onClick={() => handlePumpControl(meterId, 'start')}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
-          >
-            Start
-          </button>
-
-          {/* Stop Button */}
-          <button
-            onClick={() => handlePumpControl(meterId, 'stop')}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg"
-          >
-            Stop
-          </button>
-
-          {/* Enable/Disable Button (Meter 1: Enable, Meter 2/3: Disable) */}
-          <button
-            onClick={() => handlePumpControl(meterId, 'enable')}
-            className={`${meterId === '1' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'} text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg`}
-          >
-            {meterId === '1' ? 'Enable' : 'Disable'}
-          </button>
-        </div>
-
-        {/* Toggle Controls Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="text-muted-foreground font-medium">Status</div>
-
-          {/* Trip Indicator (clickable) */}
-          <div className="flex items-center justify-center">
-            <button onClick={() => handleTripToggle(meterId)} className="flex items-center focus:outline-none">
-              <span className={`w-6 h-6 rounded-full ${data.tripStatus === 'ON' ? 'bg-green-500' : 'bg-red-500'} ring-2 ring-white/20 transition-colors`}></span>
-              <span className="ml-2 text-sm text-muted-foreground">Trip {data.tripStatus}</span>
-            </button>
-          </div>
-
-          {/* Valve Indicator (clickable) */}
-          <div className="flex items-center justify-center">
-            <button onClick={() => handleValveToggle(meterId)} className="flex items-center focus:outline-none">
-              <span className={`w-6 h-6 rounded-full ${data.valveStatus === 'ON' ? 'bg-green-500' : 'bg-red-500'} ring-2 ring-white/20 transition-colors`}></span>
-              <span className="ml-2 text-sm text-muted-foreground">Valve {data.valveStatus}</span>
-            </button>
-          </div>
-
-          {/* Pump Status Indicator (clickable, same size as others) */}
-          <div className="flex items-center justify-center">
-            <button onClick={() => handlePumpControl(meterId, data.pumpStatus === 'ON' ? 'stop' : 'start')} className="flex items-center focus:outline-none">
-              <span className={`w-6 h-6 rounded-full ${data.pumpStatus === 'ON' ? 'bg-green-500' : 'bg-red-500'} ring-2 ring-white/20 transition-colors`}></span>
-              <span className="ml-2 text-sm text-muted-foreground">Pump {data.pumpStatus}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="my-8">
@@ -539,45 +349,80 @@ function EnergyMeterSection({ telemetry }: { telemetry: any }) {
           </div>
         </div>
       </div>
-
+      
+      {/* Energy meters 1 to 3 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <EnergyMeterCard
           title="Energy Meter 1"
           data={energyMeter1}
           meterId="1"
           onExpand={(id) => setExpanded(id)}
+          handlePumpControl={handlePumpControl}
+          handleTripToggle={handleTripToggle}
+          handleValveToggle={handleValveToggle}
         />
         <EnergyMeterCard
           title="Energy Meter 2"
           data={energyMeter2}
           meterId="2"
           onExpand={(id) => setExpanded(id)}
+          handlePumpControl={handlePumpControl}
+          handleTripToggle={handleTripToggle}
+          handleValveToggle={handleValveToggle}
         />
-        {/* Meter 3 directly below Meter 1 on desktop, stacked on mobile */}
         <EnergyMeterCard
           title="Energy Meter 3"
           data={energyMeter3}
           meterId="3"
           onExpand={(id) => setExpanded(id)}
+          handlePumpControl={handlePumpControl}
+          handleTripToggle={handleTripToggle}
+          handleValveToggle={handleValveToggle}
         />
       </div>
 
-      {/* Expanded modal view */}
-      {expanded && (
+      {/* Expanded modal view: I think it not required , we can delete it. */}
+      {/* {expanded && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-6xl">
             {expanded === '1' && (
-              <EnergyMeterCard title="Energy Meter 1" data={energyMeter1} meterId="1" showClose />
+              <EnergyMeterCard
+                title="Energy Meter 1"
+                data={energyMeter1}
+                meterId="1"
+                showClose
+                handlePumpControl={handlePumpControl}
+                handleTripToggle={handleTripToggle}
+                handleValveToggle={handleValveToggle}
+              />
             )}
             {expanded === '2' && (
-              <EnergyMeterCard title="Energy Meter 2" data={energyMeter2} meterId="2" showClose />
+              <EnergyMeterCard
+                title="Energy Meter 2"
+                data={energyMeter2}
+                meterId="2"
+                showClose
+                handlePumpControl={handlePumpControl}
+                handleTripToggle={handleTripToggle}
+                handleValveToggle={handleValveToggle}
+              />
             )}
             {expanded === '3' && (
-              <EnergyMeterCard title="Energy Meter 3" data={energyMeter3} meterId="3" showClose />
+              <EnergyMeterCard
+                title="Energy Meter 3"
+                data={energyMeter3}
+                meterId="3"
+                showClose
+                handlePumpControl={handlePumpControl}
+                handleTripToggle={handleTripToggle}
+                handleValveToggle={handleValveToggle}
+              />
             )}
           </div>
         </div>
-      )}
+      )} */}
+
+
     </div>
   );
 }
@@ -1547,13 +1392,11 @@ function DashboardContent() {
   // Handlers to save and clear inputs
   const handleSaveLowLevel = () => {
     // TODO: replace with actual save logic/API
-    console.log("Saving Low Level Set:", lowLevelSet);
     setLowLevelSet("");
   };
 
   const handleSaveHighLevel = () => {
     // TODO: replace with actual save logic/API
-    console.log("Saving High Level Set:", highLevelSet);
     setHighLevelSet("");
   };
   const [expandedChart, setExpandedChart] = useState<"pie" | "bar" | null>(null);
@@ -1563,7 +1406,6 @@ function DashboardContent() {
 
   useEffect(() => {
     const loadData = async () => {
-      console.log("Loading data...");
       const res = await fetchLatestTelemetry();
       if (res?.data?.length) {
         const formatted = res.data[0].telemetry;
@@ -1571,9 +1413,8 @@ function DashboardContent() {
       }
     };
     loadData();
-  }, [telemetryData]);
+  }, []);
 
-  console.log("Telemetry data:", telemetryData);
 
   // Handle WebSocket messages
   useEffect(() => {
@@ -1637,7 +1478,6 @@ function DashboardContent() {
     { time: "10:00", flowRate: 41, level: 80, totalFlow: 1600 },
     { time: "10:15", flowRate: 40, level: 78, totalFlow: 1650 },
   ];
-
   return (
     <div className="flex h-screen bg-sidebar text-foreground">
       <Sidebar

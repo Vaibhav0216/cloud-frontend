@@ -4,7 +4,6 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    console.log('Proxying request to AWS API:', body);
 
     const response = await fetch('https://nrj1481m2k.execute-api.ap-south-1.amazonaws.com/Register-Login', {
       method: 'POST',
@@ -15,8 +14,6 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    console.log('AWS API response status:', response.status);
-
     if (!response.ok) {
       console.error('AWS API error:', response.status, response.statusText);
       return NextResponse.json(
@@ -26,7 +23,6 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    console.log('AWS API response data:', data);
 
     // Return the response with proper CORS headers
     return NextResponse.json(data, {

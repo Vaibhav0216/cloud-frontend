@@ -86,7 +86,6 @@ export function DeviceStatusCard({
   // const sendCommand = async (deviceId: string, isOn: boolean) => {
     // const state = isOn ? 0 : 1; // Toggle state
   const sendCommand = async () => {
-    console.log("RPC command");
     const state = 1;
     await fetch("https://nrj1481m2k.execute-api.ap-south-1.amazonaws.com", {
       method: "POST",

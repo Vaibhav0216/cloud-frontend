@@ -19,7 +19,6 @@ interface TelemetryChartProps {
 
 export default function TelemetryChart({ data, type, title, color }: TelemetryChartProps) {
   // Debug: Log chart data
-  // console.log(`📈 ${title} chart data:`, data);
   
   const getIcon = () => {
     switch (type) {
